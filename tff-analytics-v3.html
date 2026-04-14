@@ -1,0 +1,2261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TFF Analytics · The Front Feed</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #0a0a0b; --bg-elev: #121215; --bg-elev-2: #1a1a1f; --bg-hover: #202028;
+  --border: #26262e; --border-strong: #2e2e38; --text: #f5f5f7; --text-muted: #9797a3;
+  --text-dim: #6b6b78; --accent: #dc2626; --accent-dim: #991b1b;
+  --accent-glow: rgba(220,38,38,0.15); --green: #10b981; --green-glow: rgba(16,185,129,0.12);
+  --amber: #f59e0b; --amber-glow: rgba(245,158,11,0.12); --blue: #3b82f6;
+  --blue-glow: rgba(59,130,246,0.12); --purple: #8b5cf6; --purple-glow: rgba(139,92,246,0.12);
+  --chart-grid: #1e1e26; --row-pad: 12px;
+}
+[data-theme="light"] {
+  --bg: #fafafa; --bg-elev: #ffffff; --bg-elev-2: #f4f4f6; --bg-hover: #ededf0;
+  --border: #e5e5ea; --border-strong: #d4d4db; --text: #0a0a0b; --text-muted: #52525b;
+  --text-dim: #8a8a94; --chart-grid: #ececf0;
+}
+[data-density="compact"] { --row-pad: 8px; }
+[data-density="spacious"] { --row-pad: 16px; }
+[data-accent="blue"] { --accent: #2563eb; --accent-dim: #1d4ed8; --accent-glow: rgba(37,99,235,0.15); }
+[data-accent="green"] { --accent: #059669; --accent-dim: #047857; --accent-glow: rgba(5,150,105,0.15); }
+[data-accent="purple"] { --accent: #7c3aed; --accent-dim: #6d28d9; --accent-glow: rgba(124,58,237,0.15); }
+[data-accent="amber"] { --accent: #d97706; --accent-dim: #b45309; --accent-glow: rgba(217,119,6,0.15); }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; min-height: 100vh; }
+h1,h2,h3,h4 { font-family: 'Poppins', sans-serif; font-weight: 700; letter-spacing: -0.02em; }
+.mono { font-family: 'JetBrains Mono', monospace; font-feature-settings: "tnum"; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── Layout ── */
+.app { display: flex; min-height: 100vh; }
+.sidebar { width: 240px; background: var(--bg-elev); border-right: 1px solid var(--border); padding: 20px 0; position: fixed; height: 100vh; overflow-y: auto; z-index: 10; }
+.brand { padding: 0 24px 20px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+.brand-mark { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 18px; letter-spacing: -0.03em; display: flex; align-items: center; gap: 10px; }
+.brand-mark::before { content: ''; width: 8px; height: 24px; background: var(--accent); border-radius: 2px; box-shadow: 0 0 16px var(--accent-glow); }
+.brand-sub { color: var(--text-dim); font-size: 11px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.08em; }
+.nav-section { padding: 6px 16px; }
+.nav-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); padding: 10px 8px 4px; font-weight: 600; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 6px; cursor: pointer; color: var(--text-muted); font-weight: 500; font-size: 13px; transition: all 0.12s; position: relative; }
+.nav-item:hover { background: var(--bg-hover); color: var(--text); }
+.nav-item.active { background: var(--accent-glow); color: var(--accent); }
+.nav-item.active .dot { background: var(--accent); }
+.nav-item .kbd { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-dim); background: var(--bg-elev-2); padding: 1px 5px; border-radius: 3px; border: 1px solid var(--border); }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); }
+
+.main { flex: 1; margin-left: 240px; min-height: 100vh; }
+.topbar { position: sticky; top: 0; z-index: 5; background: rgba(10,10,11,0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 14px 32px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+[data-theme="light"] .topbar { background: rgba(250,250,250,0.85); }
+.topbar-left { display: flex; align-items: center; gap: 16px; }
+.topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.view-title { font-size: 20px; font-weight: 700; font-family: 'Poppins', sans-serif; }
+.view-sub { color: var(--text-dim); font-size: 12px; margin-top: 2px; }
+
+.btn { background: var(--bg-elev-2); border: 1px solid var(--border); color: var(--text); padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; transition: all 0.12s; display: inline-flex; align-items: center; gap: 6px; }
+.btn:hover { background: var(--bg-hover); border-color: var(--border-strong); }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: white; }
+.btn-primary:hover { background: var(--accent-dim); border-color: var(--accent-dim); }
+.btn-icon { padding: 8px; min-width: 34px; justify-content: center; }
+.btn-sm { padding: 5px 10px; font-size: 12px; }
+.btn.active-state { background: var(--accent-glow); color: var(--accent); border-color: var(--accent); }
+.select { background: var(--bg-elev-2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 6px; font-size: 13px; font-family: inherit; cursor: pointer; }
+.input { background: var(--bg-elev-2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 6px; font-size: 13px; font-family: inherit; width: 100%; }
+.input:focus, .select:focus { outline: none; border-color: var(--accent); }
+.input-date { background: var(--bg-elev-2); border: 1px solid var(--border); color: var(--text); padding: 7px 10px; border-radius: 6px; font-size: 12px; font-family: inherit; }
+.input-date:focus { outline: none; border-color: var(--accent); }
+
+.custom-date-wrap { display: none; align-items: center; gap: 6px; }
+.custom-date-wrap.visible { display: flex; }
+
+.content { padding: 24px 32px; max-width: 1600px; }
+.view { display: none; }
+.view.active { display: block; animation: fadeIn 0.2s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* ── Info box ── */
+.info-box { background: linear-gradient(135deg,var(--accent-glow),transparent); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; font-size: 13px; line-height: 1.65; color: var(--text-muted); display: flex; gap: 12px; align-items: flex-start; }
+.info-box-icon { width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex-shrink: 0; margin-top: 1px; font-family: 'Poppins', sans-serif; }
+.info-box strong { color: var(--text); font-weight: 600; }
+.info-box-close { margin-left: auto; background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 16px; padding: 0 4px; }
+
+/* ── Floating tooltip (fixes overflow clipping bug) ── */
+#tip-float {
+  position: fixed; z-index: 9999; pointer-events: none; display: none;
+  background: var(--bg-elev-2); border: 1px solid var(--border-strong);
+  padding: 10px 12px; border-radius: 6px; font-size: 12px; color: var(--text);
+  width: 240px; line-height: 1.5; white-space: normal; font-weight: 400;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35); font-family: 'DM Sans', sans-serif;
+}
+
+/* Legacy tip-pop: hidden (content read via JS to populate #tip-float) */
+.tip { position: relative; display: inline-flex; align-items: center; gap: 4px; }
+.tip-icon { display: inline-flex; align-items: center; justify-content: center; width: 13px; height: 13px; border-radius: 50%; background: var(--bg-hover); color: var(--text-dim); font-size: 9px; font-weight: 700; font-family: 'Poppins', sans-serif; cursor: help; border: 1px solid var(--border); font-style: normal; }
+.tip-icon:hover { background: var(--accent); color: white; border-color: var(--accent); }
+.tip-pop { display: none; }
+
+/* ── Tab bar ── */
+.tab-bar { display: flex; gap: 2px; margin-bottom: 16px; padding: 4px; background: var(--bg-elev-2); border-radius: 8px; width: fit-content; }
+.tab-btn { padding: 7px 16px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--text-muted); border: none; background: transparent; font-family: inherit; transition: all 0.12s; }
+.tab-btn.active { background: var(--bg-elev); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── Cards ── */
+.grid { display: grid; gap: 16px; }
+.grid-4 { grid-template-columns: repeat(4,1fr); }
+.grid-3 { grid-template-columns: repeat(3,1fr); }
+.grid-2 { grid-template-columns: repeat(2,1fr); }
+.grid-6 { grid-template-columns: repeat(6,1fr); }
+.card { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 10px; padding: 20px; position: relative; overflow: hidden; }
+.card-compact { padding: 16px; }
+.card-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 12px; }
+.card-header h3 { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.card-header .sub { color: var(--text-dim); font-size: 12px; }
+.kpi { font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700; letter-spacing: -0.02em; }
+.kpi-sm { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+.kpi-delta { display: inline-flex; align-items: center; gap: 3px; font-size: 12px; font-weight: 600; font-family: 'JetBrains Mono', monospace; margin-top: 8px; }
+.kpi-delta.up { color: var(--green); }
+.kpi-delta.down { color: var(--accent); }
+.kpi-delta.flat { color: var(--text-dim); }
+.kpi-delta-sub { color: var(--text-dim); font-weight: 400; margin-left: 4px; }
+
+/* ── Tables ── */
+.table-wrap { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.table-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--border); gap: 12px; flex-wrap: wrap; }
+.table-head h3 { font-size: 15px; font-weight: 600; }
+.table-head .sub { color: var(--text-dim); font-size: 12px; margin-top: 2px; }
+.table-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.table-search { background: var(--bg-elev-2); border: 1px solid var(--border); color: var(--text); padding: 7px 12px; border-radius: 6px; font-family: inherit; font-size: 13px; min-width: 180px; }
+.table-search:focus { outline: none; border-color: var(--accent); }
+.table-scroll { overflow-x: auto; max-height: 800px; overflow-y: auto; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; padding: var(--row-pad) 16px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); font-weight: 600; border-bottom: 1px solid var(--border); background: var(--bg-elev-2); white-space: nowrap; cursor: pointer; user-select: none; position: sticky; top: 0; z-index: 1; }
+th:hover { color: var(--text); }
+th.sort-asc::after { content: ' ↑'; color: var(--accent); }
+th.sort-desc::after { content: ' ↓'; color: var(--accent); }
+td { padding: var(--row-pad) 16px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
+tbody tr:hover { background: var(--bg-hover); cursor: pointer; }
+tbody tr:last-child td { border-bottom: none; }
+td .title-cell { display: flex; align-items: center; gap: 10px; }
+td .thumb { width: 36px; height: 36px; border-radius: 4px; background: var(--bg-elev-2); object-fit: cover; flex-shrink: 0; }
+.title-text { font-weight: 500; max-width: 420px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.cat-badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-right: 4px; }
+.cat-politics { background: rgba(220,38,38,0.15); color: #f87171; }
+.cat-celebrity { background: rgba(139,92,246,0.15); color: #a78bfa; }
+.cat-entertainment { background: rgba(16,185,129,0.15); color: #34d399; }
+.cat-viral { background: rgba(59,130,246,0.15); color: #60a5fa; }
+.cat-social { background: rgba(245,158,11,0.15); color: #fbbf24; }
+.cat-news, .cat-default { background: var(--bg-hover); color: var(--text-muted); }
+
+.status-pill { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+.status-rising, .status-new { background: var(--green-glow); color: #34d399; }
+.status-up { background: var(--blue-glow); color: #60a5fa; }
+.status-flat { background: var(--bg-hover); color: var(--text-dim); }
+.status-down { background: var(--amber-glow); color: #fbbf24; }
+.status-falling { background: var(--accent-glow); color: #f87171; }
+.status-dead { background: var(--bg-hover); color: var(--text-dim); }
+.status-evergreen { background: var(--green-glow); color: #34d399; }
+.status-refresh { background: var(--amber-glow); color: #fbbf24; }
+.status-opportunity { background: var(--blue-glow); color: #60a5fa; }
+.status-warning { background: var(--accent-glow); color: #f87171; }
+
+.num { font-family: 'JetBrains Mono', monospace; font-weight: 500; text-align: right; }
+th.num-head { text-align: right; }
+
+/* ── Login Screen ── */
+#login-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 10000; display: flex; align-items: center; justify-content: center; }
+.login-box { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 16px; padding: 40px 36px 32px; width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 0; }
+.login-logo { display: flex; align-items: center; gap: 12px; font-size: 20px; font-weight: 700; font-family: 'Poppins', sans-serif; color: var(--text); margin-bottom: 6px; }
+.login-sub { font-size: 12px; color: var(--text-dim); margin: 0 0 28px; }
+.login-label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-dim); margin-bottom: 8px; }
+.login-input { width: 100%; box-sizing: border-box; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 11px 14px; font-size: 14px; color: var(--text); outline: none; transition: border-color 0.15s; margin-bottom: 14px; font-family: inherit; }
+.login-input:focus { border-color: var(--accent); }
+.login-btn { width: 100%; padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: opacity 0.15s; margin-bottom: 12px; }
+.login-btn:hover { opacity: 0.88; }
+.login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.login-error { font-size: 13px; color: #ef4444; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); border-radius: 6px; padding: 9px 12px; margin-bottom: 12px; }
+.login-remember { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-dim); cursor: pointer; user-select: none; }
+.login-remember input { accent-color: var(--accent); }
+
+/* ── Overview Highlights Bar ── */
+.highlights-bar { display: flex; align-items: center; gap: 0; background: var(--bg-elev); border: 1px solid var(--border); border-radius: 10px; padding: 0; overflow: hidden; }
+.hl-item { display: flex; align-items: center; gap: 10px; padding: 14px 20px; flex: 1; min-width: 0; }
+.hl-icon { font-size: 18px; flex-shrink: 0; }
+.hl-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); flex-shrink: 0; }
+.hl-val { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
+.hl-badge { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 20px; flex-shrink: 0; }
+.hl-badge.pos { background: rgba(16,185,129,0.15); color: #10b981; }
+.hl-badge.neg { background: rgba(239,68,68,0.15); color: #ef4444; }
+.hl-badge.neu { background: rgba(139,92,246,0.15); color: #8b5cf6; }
+.hl-sep { width: 1px; background: var(--border); align-self: stretch; flex-shrink: 0; }
+.tier-badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; letter-spacing: 0.05em; }
+.tier-t1 { background: rgba(16,185,129,0.15); color: #10b981; }
+.tier-t2 { background: rgba(59,130,246,0.15); color: #3b82f6; }
+.tier-t3 { background: rgba(100,116,139,0.15); color: #94a3b8; }
+/* ── Social Breakdown ── */
+.social-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; padding: 16px 0 4px; }
+.social-card { background: var(--bg-elev-2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 12px; display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }
+.social-icon { font-size: 24px; margin-bottom: 4px; }
+.social-name { font-size: 12px; font-weight: 600; color: var(--text-dim); text-transform: capitalize; }
+.social-sessions { font-size: 20px; font-weight: 700; color: var(--text); font-family: 'JetBrains Mono', monospace; }
+.social-bar-wrap { width: 100%; height: 4px; background: var(--bg-elev); border-radius: 2px; overflow: hidden; margin: 4px 0; }
+.social-bar { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.5s ease; }
+.social-pct { font-size: 11px; color: var(--text-dim); }
+
+/* ── Realtime ── */
+.realtime-hero { background: linear-gradient(135deg,var(--bg-elev) 0%,var(--bg-elev-2) 100%); border: 1px solid var(--border); border-radius: 10px; padding: 28px; margin-bottom: 20px; position: relative; overflow: hidden; }
+.realtime-hero::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg,transparent,var(--accent),transparent); animation: sweep 2.4s linear infinite; }
+@keyframes sweep { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+.rt-big { font-family: 'JetBrains Mono', monospace; font-size: 64px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; color: var(--text); }
+.rt-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.pulse-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: pulse 1.6s ease-in-out infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.85); } }
+
+/* ── Bar lists ── */
+.bar-list { display: flex; flex-direction: column; gap: 6px; }
+.bar-row { display: flex; align-items: center; gap: 12px; position: relative; padding: 6px 8px; border-radius: 4px; }
+.bar-label { flex: 1; font-size: 13px; z-index: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar-val { font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 13px; z-index: 1; color: var(--text); }
+.bar-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent-glow); border-radius: 4px; transition: width 0.3s ease; }
+
+/* ── Calendar ── */
+.calendar { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; margin-top: 8px; }
+.cal-day-name { font-size: 10px; text-transform: uppercase; color: var(--text-dim); text-align: center; padding: 4px; font-weight: 600; letter-spacing: 0.04em; }
+.cal-cell { aspect-ratio: 1; background: var(--bg-elev-2); border-radius: 4px; padding: 6px; font-size: 11px; color: var(--text-muted); display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; transition: all 0.12s; position: relative; overflow: hidden; border: 1px solid transparent; }
+.cal-cell:hover { border-color: var(--border-strong); }
+.cal-cell.empty { background: transparent; cursor: default; }
+.cal-cell .cal-count { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 13px; color: var(--text); }
+.cal-cell.has-articles { background: var(--accent-glow); color: var(--text); }
+.cal-cell.today { border-color: var(--accent); }
+
+/* ── Sparkline ── */
+.spark { display: inline-block; width: 80px; height: 24px; vertical-align: middle; }
+
+/* ── Author cards ── */
+.author-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+.author-card { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 10px; padding: 20px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; transition: border-color 0.12s; }
+.author-card:hover { border-color: var(--border-strong); }
+.author-avatar { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border); }
+.author-avatar-ph { width: 56px; height: 56px; border-radius: 50%; background: var(--accent-glow); border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 22px; color: var(--accent); font-family: 'Poppins', sans-serif; }
+.author-name { font-weight: 600; font-size: 14px; }
+.author-stat { font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 700; color: var(--accent); }
+.author-sub { font-size: 11px; color: var(--text-dim); }
+
+/* ── Goal cards ── */
+.goal-progress { height: 6px; background: var(--bg-elev-2); border-radius: 3px; overflow: hidden; margin-top: 12px; }
+.goal-progress-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.4s ease; }
+.goal-progress-fill.met { background: var(--green); }
+
+/* ── SEO opportunity sections ── */
+.opp-section { border-radius: 8px; border: 1px solid; padding: 0; margin-bottom: 20px; overflow: hidden; }
+.opp-section-header { padding: 12px 16px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+.opp-amber { border-color: rgba(245,158,11,0.3); }
+.opp-amber .opp-section-header { background: var(--amber-glow); color: var(--amber); }
+.opp-blue { border-color: rgba(59,130,246,0.3); }
+.opp-blue .opp-section-header { background: var(--blue-glow); color: var(--blue); }
+.opp-green { border-color: rgba(16,185,129,0.3); }
+.opp-green .opp-section-header { background: var(--green-glow); color: var(--green); }
+.opp-red { border-color: rgba(220,38,38,0.3); }
+.opp-red .opp-section-header { background: var(--accent-glow); color: #f87171; }
+
+/* ── Metric toggle chips ── */
+.metric-toggles { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.mtoggle { padding: 5px 12px; border-radius: 14px; font-size: 12px; cursor: pointer; transition: all 0.12s; font-weight: 500; border: 1px solid var(--border); background: var(--bg-elev-2); color: var(--text-muted); }
+.mtoggle.on { border-color: currentColor; }
+.mtoggle-pv.on { color: var(--accent); background: var(--accent-glow); border-color: var(--accent); }
+.mtoggle-users.on { color: var(--blue); background: var(--blue-glow); border-color: var(--blue); }
+.mtoggle-sessions.on { color: var(--green); background: var(--green-glow); border-color: var(--green); }
+.mtoggle-engaged.on { color: var(--purple); background: var(--purple-glow); border-color: var(--purple); }
+.mtoggle-new.on { color: var(--amber); background: var(--amber-glow); border-color: var(--amber); }
+
+/* ── Chips ── */
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { padding: 5px 11px; background: var(--bg-elev-2); border: 1px solid var(--border); border-radius: 14px; font-size: 12px; cursor: pointer; transition: all 0.12s; color: var(--text-muted); font-weight: 500; }
+.chip:hover { background: var(--bg-hover); color: var(--text); }
+.chip.active { background: var(--accent-glow); color: var(--accent); border-color: var(--accent); }
+
+/* ── Modal ── */
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); display: none; align-items: flex-start; justify-content: center; padding: 40px 20px; z-index: 100; overflow-y: auto; }
+.modal-backdrop.active { display: flex; }
+.modal { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 12px; width: 100%; max-width: 1100px; max-height: calc(100vh - 80px); overflow-y: auto; }
+.modal-sm { max-width: 560px; }
+.modal-head { padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; position: sticky; top: 0; background: var(--bg-elev); z-index: 2; }
+.modal-title { font-size: 18px; font-weight: 700; line-height: 1.35; max-width: 85%; }
+.modal-body { padding: 24px; }
+.modal-close { background: var(--bg-elev-2); border: 1px solid var(--border); color: var(--text); width: 32px; height: 32px; border-radius: 6px; cursor: pointer; font-size: 16px; }
+
+/* ── Command palette ── */
+.cmdk { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 200; display: none; align-items: flex-start; justify-content: center; padding-top: 15vh; }
+.cmdk.active { display: flex; }
+.cmdk-panel { width: 100%; max-width: 560px; background: var(--bg-elev); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: 0 24px 48px rgba(0,0,0,0.4); }
+.cmdk-input { width: 100%; padding: 18px 20px; background: transparent; border: none; color: var(--text); font-size: 16px; font-family: 'DM Sans', sans-serif; border-bottom: 1px solid var(--border); }
+.cmdk-input:focus { outline: none; }
+.cmdk-list { max-height: 400px; overflow-y: auto; padding: 8px; }
+.cmdk-item { padding: 10px 14px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 12px; font-size: 13px; }
+.cmdk-item:hover, .cmdk-item.selected { background: var(--bg-hover); }
+.cmdk-item .cmdk-label { flex: 1; color: var(--text); }
+.cmdk-item .cmdk-sub { color: var(--text-dim); font-size: 11px; }
+.cmdk-group { padding: 8px 14px 4px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); font-weight: 600; }
+
+/* ── Misc ── */
+.loading { display: flex; align-items: center; justify-content: center; padding: 40px; color: var(--text-dim); font-size: 13px; }
+.loading::before { content: ''; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 10px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.empty { padding: 60px 20px; text-align: center; color: var(--text-dim); font-size: 13px; }
+.empty-sm { padding: 20px; text-align: center; color: var(--text-dim); font-size: 12px; }
+.error { padding: 16px; background: rgba(220,38,38,0.1); border: 1px solid rgba(220,38,38,0.3); border-radius: 6px; color: #f87171; font-size: 13px; }
+.section-title { font-size: 16px; font-weight: 600; margin: 24px 0 12px; font-family: 'Poppins', sans-serif; display: flex; align-items: center; gap: 8px; }
+.chart-box { position: relative; height: 280px; }
+.chart-box-sm { position: relative; height: 140px; }
+.chart-box-lg { position: relative; height: 360px; }
+.flex-row { display: flex; align-items: center; gap: 10px; }
+.space-between { justify-content: space-between; }
+.mb-8 { margin-bottom: 8px; }
+.mb-16 { margin-bottom: 16px; }
+.mb-24 { margin-bottom: 24px; }
+.mt-16 { margin-top: 16px; }
+.mt-24 { margin-top: 24px; }
+.pos-good { color: var(--green); font-family: 'JetBrains Mono', monospace; }
+.pos-ok { color: var(--amber); font-family: 'JetBrains Mono', monospace; }
+.pos-bad { color: var(--accent); font-family: 'JetBrains Mono', monospace; }
+.kbd-key { display: inline-block; padding: 2px 6px; background: var(--bg-elev-2); border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; color: var(--text); min-width: 20px; text-align: center; }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+@media (max-width: 1200px) { .grid-4,.grid-6 { grid-template-columns: repeat(2,1fr); } .grid-3 { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 900px) {
+  .sidebar { width: 64px; }
+  .sidebar .brand-text, .sidebar .nav-label, .sidebar .nav-item span:not(.dot), .nav-item .kbd { display: none; }
+  .main { margin-left: 64px; }
+  .content { padding: 16px; }
+  .grid-4,.grid-3,.grid-2,.grid-6 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── Login overlay ────────────────────────────────────────── -->
+<div id="login-overlay">
+  <div class="login-box">
+    <div class="login-logo">
+      <svg width="36" height="36" viewBox="0 0 36 36" fill="none"><rect width="36" height="36" rx="8" fill="var(--accent)"/><rect x="8" y="14" width="20" height="3" rx="1.5" fill="white"/><rect x="8" y="20" width="14" height="3" rx="1.5" fill="white"/></svg>
+      <span>TFF Analytics</span>
+    </div>
+    <p class="login-sub">The Front Feed · Private Dashboard</p>
+    <form id="login-form" autocomplete="on">
+      <label class="login-label" for="login-pass">Access Password</label>
+      <input id="login-pass" type="password" class="login-input" placeholder="Enter your password" autocomplete="current-password" />
+      <button type="submit" id="login-btn" class="login-btn">Unlock Dashboard</button>
+      <div id="login-error" class="login-error" style="display:none"></div>
+      <label class="login-remember">
+        <input type="checkbox" id="login-remember"> Remember on this device
+      </label>
+    </form>
+  </div>
+</div>
+
+<div class="app" id="app-shell" style="display:none">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark"><span class="brand-text">TFF Analytics</span></div>
+      <div class="brand-sub brand-text">The Front Feed · v3</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">General</div>
+      <div class="nav-item active" data-view="overview"><span class="dot"></span><span>Overview</span><span class="kbd">1</span></div>
+      <div class="nav-item" data-view="realtime"><span class="dot"></span><span>Realtime</span><span class="kbd">2</span></div>
+      <div class="nav-item" data-view="articles"><span class="dot"></span><span>Articles</span><span class="kbd">3</span></div>
+      <div class="nav-item" data-view="movers"><span class="dot"></span><span>Movers</span><span class="kbd">4</span></div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Analysis</div>
+      <div class="nav-item" data-view="insights"><span class="dot"></span><span>Insights</span><span class="kbd">5</span></div>
+      <div class="nav-item" data-view="contentops"><span class="dot"></span><span>Content Ops</span><span class="kbd">6</span></div>
+      <div class="nav-item" data-view="goals"><span class="dot"></span><span>Goals</span><span class="kbd">7</span></div>
+      <div class="nav-item" data-view="authors"><span class="dot"></span><span>Authors</span></div>
+      <div class="nav-item" data-view="tags"><span class="dot"></span><span>Tags</span></div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Traffic</div>
+      <div class="nav-item" data-view="sources"><span class="dot"></span><span>Sources</span></div>
+      <div class="nav-item" data-view="campaigns"><span class="dot"></span><span>Campaigns</span></div>
+      <div class="nav-item" data-view="landing-pages"><span class="dot"></span><span>Landing Pages</span></div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Audience</div>
+      <div class="nav-item" data-view="audience"><span class="dot"></span><span>Audience</span></div>
+      <div class="nav-item" data-view="geo"><span class="dot"></span><span>Geography</span></div>
+      <div class="nav-item" data-view="devices"><span class="dot"></span><span>Devices</span></div>
+      <div class="nav-item" data-view="categories"><span class="dot"></span><span>Categories</span></div>
+      <div class="nav-item" data-view="events"><span class="dot"></span><span>Events</span></div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Search Console</div>
+      <div class="nav-item" data-view="queries"><span class="dot"></span><span>Queries</span></div>
+      <div class="nav-item" data-view="pages"><span class="dot"></span><span>Pages</span></div>
+      <div class="nav-item" data-view="matrix"><span class="dot"></span><span>Query × Page</span></div>
+      <div class="nav-item" data-view="search-trends"><span class="dot"></span><span>Search Trends</span></div>
+      <div class="nav-item" data-view="news-search"><span class="dot"></span><span>News Search</span></div>
+      <div class="nav-item" data-view="seo-opportunities"><span class="dot"></span><span>SEO Opportunities</span></div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Monetization</div>
+      <div class="nav-item" data-view="revenue"><span class="dot"></span><span>Revenue Estimator</span></div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div>
+          <div class="view-title" id="topbar-title">Overview</div>
+          <div class="view-sub" id="topbar-sub">Last 7 days</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-sm" id="cmdk-btn" title="Command palette (Ctrl+K)"><span style="font-size:11px;">⌘K</span> Search</button>
+        <select class="select" id="range-select">
+          <option value="today">Today</option>
+          <option value="yesterday">Yesterday</option>
+          <option value="7d" selected>Last 7 days</option>
+          <option value="28d">Last 28 days</option>
+          <option value="30d">Last 30 days</option>
+          <option value="90d">Last 90 days</option>
+          <option value="custom">Custom range…</option>
+        </select>
+        <div class="custom-date-wrap" id="custom-date-wrap">
+          <input type="date" class="input-date" id="custom-start" title="Start date">
+          <span style="color:var(--text-dim);font-size:12px;">→</span>
+          <input type="date" class="input-date" id="custom-end" title="End date">
+          <button class="btn btn-sm btn-primary" id="custom-apply">Go</button>
+        </div>
+        <button class="btn btn-sm" id="compare-btn" title="Toggle period comparison">Compare</button>
+        <button class="btn btn-icon" id="refresh-btn" title="Refresh (R)">↻</button>
+        <button class="btn btn-icon" id="help-btn" title="Shortcuts (?)">?</button>
+        <button class="btn btn-icon" id="settings-btn" title="Settings">⚙</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <section class="view active" id="view-overview"></section>
+      <section class="view" id="view-realtime"></section>
+      <section class="view" id="view-articles"></section>
+      <section class="view" id="view-movers"></section>
+      <section class="view" id="view-insights"></section>
+      <section class="view" id="view-contentops"></section>
+      <section class="view" id="view-goals"></section>
+      <section class="view" id="view-authors"></section>
+      <section class="view" id="view-tags"></section>
+      <section class="view" id="view-sources"></section>
+      <section class="view" id="view-campaigns"></section>
+      <section class="view" id="view-landing-pages"></section>
+      <section class="view" id="view-audience"></section>
+      <section class="view" id="view-geo"></section>
+      <section class="view" id="view-devices"></section>
+      <section class="view" id="view-categories"></section>
+      <section class="view" id="view-events"></section>
+      <section class="view" id="view-queries"></section>
+      <section class="view" id="view-pages"></section>
+      <section class="view" id="view-matrix"></section>
+      <section class="view" id="view-search-trends"></section>
+      <section class="view" id="view-news-search"></section>
+      <section class="view" id="view-seo-opportunities"></section>
+      <section class="view" id="view-revenue"></section>
+    </div>
+  </main>
+</div>
+
+<!-- Article detail modal -->
+<div class="modal-backdrop" id="article-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="modal-title">Loading…</div>
+      <button class="modal-close" onclick="closeModal('article-modal')">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"><div class="loading">Loading article data…</div></div>
+  </div>
+</div>
+
+<!-- Settings modal -->
+<div class="modal-backdrop" id="settings-modal">
+  <div class="modal modal-sm">
+    <div class="modal-head">
+      <div class="modal-title">Settings</div>
+      <button class="modal-close" onclick="closeModal('settings-modal')">✕</button>
+    </div>
+    <div class="modal-body" id="settings-body"></div>
+  </div>
+</div>
+
+<!-- Help modal -->
+<div class="modal-backdrop" id="help-modal">
+  <div class="modal modal-sm">
+    <div class="modal-head">
+      <div class="modal-title">Keyboard Shortcuts</div>
+      <button class="modal-close" onclick="closeModal('help-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;justify-content:space-between;"><span>Command palette</span><span><span class="kbd-key">Ctrl</span> <span class="kbd-key">K</span></span></div>
+        <div style="display:flex;justify-content:space-between;"><span>Jump to view</span><span><span class="kbd-key">1</span> – <span class="kbd-key">7</span></span></div>
+        <div style="display:flex;justify-content:space-between;"><span>Refresh data</span><span><span class="kbd-key">R</span></span></div>
+        <div style="display:flex;justify-content:space-between;"><span>Toggle theme</span><span><span class="kbd-key">T</span></span></div>
+        <div style="display:flex;justify-content:space-between;"><span>Open settings</span><span><span class="kbd-key">,</span></span></div>
+        <div style="display:flex;justify-content:space-between;"><span>Show shortcuts</span><span><span class="kbd-key">?</span></span></div>
+        <div style="display:flex;justify-content:space-between;"><span>Close modal</span><span><span class="kbd-key">Esc</span></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Command palette -->
+<div class="cmdk" id="cmdk">
+  <div class="cmdk-panel">
+    <input class="cmdk-input" id="cmdk-input" placeholder="Type a view or search an article…" autocomplete="off">
+    <div class="cmdk-list" id="cmdk-list"></div>
+  </div>
+</div>
+
+<!-- Floating tooltip (body-level, fixed position — fixes overflow clipping in sticky headers) -->
+<div id="tip-float"></div>
+
+<script>
+// ============================================================
+// TFF Analytics Frontend — v3
+// ============================================================
+
+const API_BASE = 'https://tff-analytics-worker.sadikhossain747.workers.dev';
+
+// ============================================================
+// Glossary
+// ============================================================
+const GLOSSARY = {
+  pageviews: "Total page views. Each load counts, even repeat visits by the same user.",
+  users: "Unique visitors. Each person counted once regardless of how many pages they view.",
+  sessions: "A group of interactions within ~30 minutes. One user can have multiple sessions.",
+  engagedSessions: "Sessions lasting 10+ seconds, triggering a conversion, or with 2+ pageviews. A quality signal.",
+  bounceRate: "% of sessions with only one page viewed. Lower is generally better for news sites.",
+  avgDuration: "Average time per session on site.",
+  avgEngagementDuration: "Average engaged time per session — more meaningful than session duration.",
+  engagementRate: "% of sessions that were engaged (10s+, conversion, or 2+ pages). Higher = better quality traffic.",
+  newUsers: "First-time visitors in this period.",
+  returningUsers: "Users who visited before — shows loyalty and audience retention.",
+  pagesPerSession: "Average pages viewed per session. Higher = more content explored.",
+  impressions: "Times your page appeared in Google search results. Shows search visibility.",
+  clicks: "Times users clicked through from Google search to your page.",
+  ctr: "Click-through rate = clicks ÷ impressions. 3–5% is solid, 10%+ is great.",
+  position: "Average rank in Google results. 1 = top. Lower number = better.",
+  activeUsers: "Users on your site in the last 5 minutes.",
+  status: "Traffic trend vs. the previous period. Rising/New = gaining, Falling/Down = losing.",
+  delta: "Raw change vs. previous period.",
+  pctChange: "% change vs. previous period.",
+  isBrand: "Brand query — contains 'front feed'. Non-brand queries show organic demand you've earned.",
+  channel: "How the visitor found you: Organic Search, Direct, Referral, Organic Social, etc.",
+  source: "The specific referring site (e.g. google.com, facebook.com).",
+  deviceCategory: "desktop, mobile, or tablet. News sites are usually 60–80% mobile.",
+  articles: "Number of articles in this group.",
+  wordCount: "Estimated word count of the article body.",
+  readingTime: "Estimated reading time at 200 words per minute.",
+  contentScore: "Composite score: pageviews × engagement rate ÷ article age in days. Higher = more efficient content.",
+  sessionsPerUser: "Average number of sessions per user. Higher = more return visits.",
+  language: "Browser language setting of your visitors.",
+  resolution: "Screen resolution of your visitors' devices.",
+  campaign: "UTM campaign name attached to the traffic source.",
+  event: "A GA4 event triggered on your site (page_view, scroll, click, etc.).",
+  landingPage: "The first page a user landed on when starting their session.",
+};
+
+// ============================================================
+// View info boxes
+// ============================================================
+const VIEW_INFO = {
+  overview: { title: "What this shows", body: "Your site's at-a-glance performance. KPIs compare the selected period to the <strong>previous period of equal length</strong>. The traffic trend chart supports multi-metric overlays — toggle metrics with the chips above the chart." },
+  realtime: { title: "What this shows", body: "What's happening on your site <strong>right now</strong>. Auto-refreshes every 30 seconds. Catch articles going viral, see which countries are reading, and watch traffic spikes in real time." },
+  articles: { title: "What this shows", body: "Every article with GA4 traffic <strong>and</strong> Search Console data joined — something neither tool gives natively. Includes reading time, engagement rate, and content score. Click any row for a full article breakdown." },
+  movers: { title: "What this shows", body: "Articles whose traffic changed the most vs. the previous period. <strong>Rising</strong> = gaining traction, <strong>Falling</strong> = losing visibility." },
+  insights: { title: "What this shows", body: "Auto-generated analysis: evergreen hits, query opportunities, cannibalization warnings, underperformers, and refresh candidates." },
+  contentops: { title: "What this shows", body: "Editorial operations: publishing calendar, velocity, author leaderboard, and publishing hour distribution." },
+  goals: { title: "What this shows", body: "Set targets for the metrics that matter. Goals are saved locally per time range." },
+  authors: { title: "What this shows", body: "Author performance: pageviews, users, engagement rate, and top article per writer. Joined from WordPress author data + GA4." },
+  tags: { title: "What this shows", body: "WordPress tag performance. Which tags (topics) drive the most traffic? Use this to identify your most valuable topic clusters." },
+  sources: { title: "What this shows", body: "Where visitors came from: channels (Organic Search, Social, Referral, Direct) and raw source/medium breakdown." },
+  campaigns: { title: "What this shows", body: "UTM campaign performance. Tracks traffic from newsletter links, social posts, paid ads, or any other tracked campaigns." },
+  'landing-pages': { title: "What this shows", body: "Which pages users land on first. High bounce rate on a landing page = headline or content mismatch with what brought them there." },
+  audience: { title: "What this shows", body: "New vs. returning users, acquisition channels, language distribution, and screen resolution breakdown." },
+  geo: { title: "What this shows", body: "Audience by country and city. Tier-1 traffic (US/UK/CA/AU) matters most for ad RPM. Raptive/Mediavine require 50%+ tier-1." },
+  devices: { title: "What this shows", body: "Desktop vs. mobile vs. tablet. News sites typically run 60–80% mobile. Check OS and browser breakdowns for unusual patterns." },
+  categories: { title: "What this shows", body: "Which content verticals drive the most traffic. Double down on 2–3 strong categories rather than spreading thin." },
+  events: { title: "What this shows", body: "GA4 events fired on your site. Standard events include page_view, scroll, session_start, and first_visit. Use this to understand user behavior patterns." },
+  queries: { title: "What this shows", body: "Every search query that showed your site in Google. Non-brand queries position 6–20 with impressions are your best quick wins." },
+  pages: { title: "What this shows", body: "Your URLs as ranked by Search Console. High impressions + low CTR = improve headline or meta. High clicks + bad position = push to move up." },
+  matrix: { title: "What this shows", body: "Every query-page combination. If the same query shows multiple of your pages, that's keyword cannibalization." },
+  'search-trends': { title: "What this shows", body: "Daily Search Console performance over time. Track brand vs. non-brand click trends and spot algorithm impact dates." },
+  'news-search': { title: "What this shows", body: "Search Console data filtered to <strong>Google News</strong> surfaces only. Shows which articles and queries are getting News carousel impressions." },
+  'seo-opportunities': { title: "What this shows", body: "Actionable SEO tasks: pages with low CTR despite impressions, pages near page 1, quick wins in positions 4–7, and query opportunities." },
+};
+
+// ============================================================
+// State
+// ============================================================
+const STATE = {
+  token: sessionStorage.getItem('tff_token') || localStorage.getItem('tff_token_persist') || '',
+  range: localStorage.getItem('tff_range') || '7d',
+  customStart: localStorage.getItem('tff_custom_start') || '',
+  customEnd: localStorage.getItem('tff_custom_end') || '',
+  compareMode: false,
+  view: 'overview',
+  theme: localStorage.getItem('tff_theme') || 'dark',
+  density: localStorage.getItem('tff_density') || 'normal',
+  accent: localStorage.getItem('tff_accent') || 'red',
+  dismissed: JSON.parse(localStorage.getItem('tff_dismissed') || '{}'),
+  notes: JSON.parse(localStorage.getItem('tff_notes') || '{}'),
+  goals: JSON.parse(localStorage.getItem('tff_goals') || '{}'),
+  tsMetrics: JSON.parse(localStorage.getItem('tff_ts_metrics') || '["pageviews","users"]'),
+  cache: {},
+  charts: {},
+  sort: {},
+  filter: {},
+  chipFilter: {},
+  exports: {},
+  allArticlesCache: null,
+};
+
+// ============================================================
+// Utilities
+// ============================================================
+const $ = sel => document.querySelector(sel);
+const $$ = sel => document.querySelectorAll(sel);
+
+const fmt = {
+  num(n) { if (n == null) return '—'; const x = Math.round(n); if (x >= 1e6) return (x/1e6).toFixed(1)+'M'; if (x >= 1e3) return (x/1e3).toFixed(1)+'k'; return x.toLocaleString(); },
+  full(n) { return n == null ? '—' : Math.round(n).toLocaleString(); },
+  pct(n) { return n == null ? '—' : (n*100).toFixed(1)+'%'; },
+  pos(n) { return n == null || n === 0 ? '—' : n.toFixed(1); },
+  dur(s) { if (!s) return '0s'; const m = Math.floor(s/60); const sec = Math.round(s%60); return m ? `${m}m ${sec}s` : `${sec}s`; },
+  date(d) { if (!d) return ''; return new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric'}); },
+  dateTime(d) { if (!d) return ''; return new Date(d).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}); },
+  dateKey(d) { if (!d) return ''; return `${d.slice(0,4)}-${d.slice(4,6)}-${d.slice(6,8)}`; },
+  daysAgo(d) { if (!d) return null; return Math.floor((Date.now()-new Date(d).getTime())/86400000); },
+  delta(cur, prev) {
+    if (prev===0&&cur===0) return {pct:0,dir:'flat',sym:'→'};
+    if (prev===0) return {pct:100,dir:'up',sym:'↑'};
+    const p = ((cur-prev)/prev)*100;
+    return {pct:Math.abs(p),dir:p>1?'up':p<-1?'down':'flat',sym:p>1?'↑':p<-1?'↓':'→'};
+  },
+  safe(s) { return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); },
+  decode(s) { const t=document.createElement('div'); t.innerHTML=s||''; return t.textContent||t.innerText||''; },
+  catClass(cat) {
+    const c=(cat||'').toLowerCase();
+    if(c.includes('politic')) return 'cat-politics';
+    if(c.includes('celeb')) return 'cat-celebrity';
+    if(c.includes('entertain')) return 'cat-entertainment';
+    if(c.includes('viral')) return 'cat-viral';
+    if(c.includes('social')) return 'cat-social';
+    if(c.includes('news')) return 'cat-news';
+    return 'cat-default';
+  },
+  posClass(p) { if(!p||p===0) return ''; if(p<=3) return 'pos-good'; if(p<=10) return 'pos-ok'; return 'pos-bad'; },
+};
+
+// ============================================================
+// Range helpers
+// ============================================================
+function rangeParam() {
+  let s = `range=${STATE.range}`;
+  if (STATE.range === 'custom' && STATE.customStart && STATE.customEnd) {
+    s += `&start=${STATE.customStart}&end=${STATE.customEnd}`;
+  }
+  return s;
+}
+
+function rangeLabel() {
+  const labels = { today:'Today', yesterday:'Yesterday', '7d':'Last 7 days', '28d':'Last 28 days', '30d':'Last 30 days', '90d':'Last 90 days' };
+  if (STATE.range === 'custom' && STATE.customStart && STATE.customEnd) return `${STATE.customStart} → ${STATE.customEnd}`;
+  return labels[STATE.range] || STATE.range;
+}
+
+// ============================================================
+// API + cache
+// ============================================================
+async function api(path, opts = {}) {
+  const ttl = opts.ttl || 60000;
+  const key = path;
+  const now = Date.now();
+  if (!opts.fresh && STATE.cache[key] && now - STATE.cache[key].time < ttl) return STATE.cache[key].data;
+  const headers = STATE.token ? { 'Authorization': 'Bearer ' + STATE.token } : {};
+  const res = await fetch(API_BASE + path, { headers });
+  if (res.status === 401) { showLogin('Session expired. Please log in again.'); throw new Error('Unauthorized'); }
+  if (!res.ok) { const txt = await res.text(); throw new Error(`${res.status}: ${txt.slice(0,200)}`); }
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  STATE.cache[key] = { time: now, data };
+  return data;
+}
+
+// ============================================================
+// Theme / density / accent
+// ============================================================
+function applyPreferences() {
+  document.documentElement.setAttribute('data-theme', STATE.theme);
+  document.documentElement.setAttribute('data-density', STATE.density);
+  document.documentElement.setAttribute('data-accent', STATE.accent);
+  Object.values(STATE.charts).forEach(c => { try { c.update(); } catch {} });
+}
+applyPreferences();
+
+function setTheme(t) { STATE.theme=t; localStorage.setItem('tff_theme',t); applyPreferences(); }
+function setDensity(d) { STATE.density=d; localStorage.setItem('tff_density',d); applyPreferences(); }
+function setAccent(a) { STATE.accent=a; localStorage.setItem('tff_accent',a); applyPreferences(); }
+
+// ============================================================
+// CSV export
+// ============================================================
+function exportCSV(filename, rows) {
+  if (!rows || !rows.length) return;
+  const headers = Object.keys(rows[0]);
+  const csv = [headers.join(','), ...rows.map(r => headers.map(h => {
+    const v = r[h]; if (v==null) return '';
+    const s = String(v).replace(/"/g,'""');
+    return /[",\n]/.test(s) ? `"${s}"` : s;
+  }).join(','))].join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download=filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ============================================================
+// Info box + tooltip helpers
+// ============================================================
+function infoBox(viewKey) {
+  const info = VIEW_INFO[viewKey];
+  if (!info || STATE.dismissed[viewKey]) return '';
+  return `<div class="info-box" data-info="${viewKey}"><div class="info-box-icon">i</div><div style="flex:1;"><strong>${info.title}.</strong> ${info.body}</div><button class="info-box-close" data-dismiss="${viewKey}" title="Hide">✕</button></div>`;
+}
+
+function tip(label, key) {
+  const def = GLOSSARY[key];
+  if (!def) return fmt.safe(label);
+  return `<span class="tip">${fmt.safe(label)}<span class="tip-icon">i</span><span class="tip-pop">${fmt.safe(def)}</span></span>`;
+}
+
+// ============================================================
+// Generic sortable table
+// ============================================================
+function makeTable(opts) {
+  const tableId = opts.id;
+  const sortKey = STATE.sort[tableId]?.key || (opts.defaultSort || opts.columns[0].key);
+  const sortDir = STATE.sort[tableId]?.dir || (opts.defaultSortDir || 'desc');
+  const filterTerm = (STATE.filter[tableId] || '').toLowerCase();
+
+  let rows = [...(opts.data || [])];
+  if (filterTerm && opts.searchKeys) rows = rows.filter(r => opts.searchKeys.some(k => String(r[k]||'').toLowerCase().includes(filterTerm)));
+  if (opts.extraFilter) rows = rows.filter(opts.extraFilter);
+
+  rows.sort((a,b) => {
+    const va=a[sortKey], vb=b[sortKey];
+    if (typeof va==='number'&&typeof vb==='number') return sortDir==='asc'?va-vb:vb-va;
+    return sortDir==='asc'?String(va||'').localeCompare(String(vb||'')):String(vb||'').localeCompare(String(va||''));
+  });
+
+  const showing = rows.slice(0, opts.limit || 500);
+  const head = opts.columns.map(c => {
+    const cls = [];
+    if (c.align==='right'||c.num) cls.push('num-head');
+    if (c.key===sortKey) cls.push('sort-'+sortDir);
+    const label = c.tip ? tip(c.label,c.tip) : fmt.safe(c.label);
+    return `<th class="${cls.join(' ')}" data-sort="${c.key}">${label}</th>`;
+  }).join('');
+
+  const body = showing.length ? showing.map(r => {
+    const tds = opts.columns.map(c => {
+      const val = c.render ? c.render(r) : (c.fmt ? c.fmt(r[c.key]) : fmt.safe(r[c.key]??''));
+      return `<td class="${c.num||c.align==='right'?'num':''}">${val}</td>`;
+    }).join('');
+    return `<tr data-row='${opts.onRowClick?encodeURIComponent(JSON.stringify(r)):""}'>${tds}</tr>`;
+  }).join('') : `<tr><td colspan="${opts.columns.length}" class="empty">No data</td></tr>`;
+
+  const actionsHtml = [];
+  if (opts.searchKeys) actionsHtml.push(`<input class="table-search" placeholder="Filter…" data-search="${tableId}" value="${fmt.safe(filterTerm)}">`);
+  if (opts.exportName) actionsHtml.push(`<button class="btn btn-sm" data-export="${tableId}">Export CSV</button>`);
+  if (opts.extraActions) actionsHtml.push(opts.extraActions);
+
+  return `<div class="table-wrap"><div class="table-head"><div><h3>${opts.title||''}</h3><div class="sub">${rows.length} row${rows.length===1?'':'s'}${opts.subtitle?' · '+opts.subtitle:''}</div></div><div class="table-actions">${actionsHtml.join('')}</div></div><div class="table-scroll"><table><thead><tr>${head}</tr></thead><tbody data-table="${tableId}">${body}</tbody></table></div></div>`;
+}
+
+// Event delegation for table interactions
+document.addEventListener('click', e => {
+  const dismiss = e.target.closest('[data-dismiss]');
+  if (dismiss) { STATE.dismissed[dismiss.dataset.dismiss]=true; localStorage.setItem('tff_dismissed',JSON.stringify(STATE.dismissed)); dismiss.closest('.info-box').remove(); return; }
+  const th = e.target.closest('th[data-sort]');
+  if (th) { const tbody=th.closest('.table-wrap').querySelector('tbody[data-table]'); const tableId=tbody.dataset.table; const key=th.dataset.sort; const cur=STATE.sort[tableId]; STATE.sort[tableId]={key,dir:cur?.key===key&&cur.dir==='desc'?'asc':'desc'}; renderView(STATE.view); return; }
+  const exp = e.target.closest('[data-export]');
+  if (exp) { const id=exp.dataset.export; const data=STATE.exports?.[id]; if(data) exportCSV(`tff-${id}-${STATE.range}.csv`,data); return; }
+  const chip = e.target.closest('[data-chip]');
+  if (chip) { const [tableId,val]=chip.dataset.chip.split('|'); STATE.chipFilter[tableId]=STATE.chipFilter[tableId]===val?null:val; renderView(STATE.view); return; }
+  const row = e.target.closest('tr[data-row]');
+  if (row && row.dataset.row) { try { const obj=JSON.parse(decodeURIComponent(row.dataset.row)); if(obj.link||obj.path) openArticleModal(obj); } catch {} }
+});
+document.addEventListener('input', e => {
+  if (e.target.matches('[data-search]')) {
+    const id=e.target.dataset.search; STATE.filter[id]=e.target.value;
+    const pos=e.target.selectionStart; renderView(STATE.view);
+    setTimeout(()=>{ const n=document.querySelector(`[data-search="${id}"]`); if(n){n.focus();n.setSelectionRange(pos,pos);} },0);
+  }
+});
+
+// ============================================================
+// Bar list, sparkline
+// ============================================================
+function barList(items, labelKey, valKey, max) {
+  const m = max || Math.max(...items.map(i=>i[valKey]),1);
+  return `<div class="bar-list">${items.map(i=>{const pct=(i[valKey]/m)*100;return `<div class="bar-row"><div class="bar-fill" style="width:${pct}%"></div><div class="bar-label">${fmt.safe(i[labelKey])}</div><div class="bar-val">${fmt.num(i[valKey])}</div></div>`;}).join('')}</div>`;
+}
+
+function sparkline(values, color) {
+  if (!values||!values.length) return '';
+  const w=80,h=24,pad=2,max=Math.max(...values,1),min=Math.min(...values,0),range=max-min||1;
+  const step=(w-pad*2)/Math.max(values.length-1,1);
+  const points=values.map((v,i)=>`${pad+i*step},${h-pad-((v-min)/range)*(h-pad*2)}`).join(' ');
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><polyline fill="none" stroke="${color||'var(--accent)'}" stroke-width="1.5" points="${points}"/></svg>`;
+}
+
+// ============================================================
+// Chart helpers
+// ============================================================
+function getChartColors() {
+  const isDark = STATE.theme==='dark';
+  const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#dc2626';
+  return {
+    text: isDark?'#9797a3':'#52525b', grid: isDark?'#1e1e26':'#ececf0', accent,
+    accentFill: isDark?'rgba(220,38,38,0.12)':'rgba(220,38,38,0.08)', secondary:'#3b82f6',
+  };
+}
+
+function destroyChart(id) { if(STATE.charts[id]){try{STATE.charts[id].destroy();}catch{}delete STATE.charts[id];} }
+
+function makeLineChart(canvasId, labels, datasets) {
+  destroyChart(canvasId);
+  const ctx=document.getElementById(canvasId); if(!ctx) return;
+  const c=getChartColors();
+  STATE.charts[canvasId] = new Chart(ctx, {
+    type:'line',
+    data:{ labels, datasets:datasets.map(d=>({ label:d.label, data:d.data, borderColor:d.color||c.accent, backgroundColor:d.fill?c.accentFill:'transparent', fill:!!d.fill, tension:0.35, borderWidth:2, pointRadius:0, pointHoverRadius:4, pointHoverBackgroundColor:d.color||c.accent })) },
+    options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
+      plugins:{ legend:{display:datasets.length>1,labels:{color:c.text,font:{family:'DM Sans',size:12}}},
+        tooltip:{ backgroundColor:STATE.theme==='dark'?'#1a1a1f':'#fff', titleColor:STATE.theme==='dark'?'#f5f5f7':'#0a0a0b', bodyColor:STATE.theme==='dark'?'#9797a3':'#52525b', borderColor:STATE.theme==='dark'?'#26262e':'#e5e5ea', borderWidth:1, padding:12, cornerRadius:6, titleFont:{family:'DM Sans',weight:'600'}, bodyFont:{family:'JetBrains Mono'} } },
+      scales:{ x:{grid:{color:c.grid,drawBorder:false},ticks:{color:c.text,font:{family:'DM Sans',size:11}}}, y:{grid:{color:c.grid,drawBorder:false},ticks:{color:c.text,font:{family:'JetBrains Mono',size:11}}} } },
+  });
+}
+
+function makeDoughnutChart(canvasId, labels, data, colors) {
+  destroyChart(canvasId);
+  const ctx=document.getElementById(canvasId); if(!ctx) return;
+  const c=getChartColors();
+  STATE.charts[canvasId] = new Chart(ctx, {
+    type:'doughnut',
+    data:{labels,datasets:[{data,backgroundColor:colors||['#dc2626','#3b82f6','#10b981','#f59e0b','#8b5cf6','#ec4899','#14b8a6'],borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'right',labels:{color:c.text,font:{family:'DM Sans',size:12},padding:10,boxWidth:12}}}},
+  });
+}
+
+function makeBarChart(canvasId, labels, datasets, horizontal) {
+  destroyChart(canvasId);
+  const ctx=document.getElementById(canvasId); if(!ctx) return;
+  const c=getChartColors();
+  STATE.charts[canvasId] = new Chart(ctx, {
+    type:'bar',
+    data:{labels,datasets:datasets.map(d=>({label:d.label,data:d.data,backgroundColor:d.color||c.accent,borderRadius:4}))},
+    options:{ indexAxis:horizontal?'y':'x', responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:datasets.length>1,labels:{color:c.text,font:{family:'DM Sans'}}}},
+      scales:{ x:{grid:{color:c.grid,display:!horizontal},ticks:{color:c.text,font:{family:horizontal?'JetBrains Mono':'DM Sans',size:11}}}, y:{grid:{color:c.grid,display:horizontal},ticks:{color:c.text,font:{family:horizontal?'DM Sans':'JetBrains Mono',size:11}}} } },
+  });
+}
+
+// ============================================================
+// VIEW RENDERERS — Existing views (enhanced)
+// ============================================================
+
+async function renderOverview() {
+  const el = $('#view-overview');
+  el.innerHTML = infoBox('overview') + '<div class="loading">Loading overview…</div>';
+  try {
+    const [overview, series, pulse, movers, categories, sources, geo] = await Promise.all([
+      api(`/api/overview?${rangeParam()}`),
+      api(`/api/timeseries?${rangeParam()}`),
+      api('/api/pulse', {ttl:60000}),
+      api(`/api/movers?${rangeParam()}`),
+      api(`/api/categories?${rangeParam()}`),
+      api(`/api/sources?${rangeParam()}`).catch(()=>null),
+      api(`/api/geo?${rangeParam()}`).catch(()=>null),
+    ]);
+    const c = overview.current, p = overview.previous;
+    const kpi = (label, key, cur, prev, formatter=fmt.full) => {
+      const d = fmt.delta(cur, prev);
+      return `<div class="card"><div class="card-title">${tip(label,key)}</div><div class="kpi">${formatter(cur)}</div><div class="kpi-delta ${d.dir}">${d.sym} ${d.pct.toFixed(1)}% <span class="kpi-delta-sub">vs ${formatter(prev)}</span></div></div>`;
+    };
+
+    const metricColors = {pageviews:'var(--accent)',users:'#3b82f6',sessions:'#10b981',engagedSessions:'#8b5cf6',newUsers:'#f59e0b'};
+    const metricLabels = {pageviews:'Pageviews',users:'Users',sessions:'Sessions',engagedSessions:'Engaged Sessions',newUsers:'New Users'};
+    const togglesHtml = ['pageviews','users','sessions','engagedSessions','newUsers'].map(m =>
+      `<div class="mtoggle mtoggle-${m.replace('engagedSessions','engaged').replace('newUsers','new')} ${STATE.tsMetrics.includes(m)?'on':''}" data-metric="${m}">${metricLabels[m]}</div>`
+    ).join('');
+
+    el.innerHTML = infoBox('overview') + `
+      <div class="grid grid-4">
+        ${kpi('Pageviews','pageviews',c.pageviews,p.pageviews)}
+        ${kpi('Users','users',c.users,p.users)}
+        ${kpi('Sessions','sessions',c.sessions,p.sessions)}
+        ${kpi('Engaged Sessions','engagedSessions',c.engagedSessions,p.engagedSessions)}
+      </div>
+      <div class="grid grid-4 mt-16">
+        ${kpi('Bounce Rate','bounceRate',c.bounceRate||0,p.bounceRate||0,v=>((v||0)*100).toFixed(1)+'%')}
+        ${kpi('Avg. Session Duration','avgDuration',c.avgDuration||0,p.avgDuration||0,fmt.dur)}
+        ${kpi('Engagement Rate','engagementRate',c.engagementRate||0,p.engagementRate||0,v=>((v||0)*100).toFixed(1)+'%')}
+        ${kpi('New Users','newUsers',c.newUsers||0,p.newUsers||0)}
+      </div>
+      <div class="grid grid-3 mt-16">
+        ${kpi('Returning Users','returningUsers',c.returningUsers||0,p.returningUsers||0)}
+        ${kpi('Pages / Session','pagesPerSession',c.pagesPerSession||0,p.pagesPerSession||0,v=>(v||0).toFixed(2))}
+        ${kpi('Avg. Engagement Time','avgEngagementDuration',c.avgEngagementDuration||0,p.avgEngagementDuration||0,fmt.dur)}
+      </div>
+      ${(()=>{
+        // Highlights bar
+        const topArticle = movers.rising?.[0];
+        const bestSource = sources?.byChannel?.[0];
+        const t1Countries = (geo?.countries||[]).filter(g => ['United States','United Kingdom','Canada','Australia','New Zealand','Ireland'].includes(g.country));
+        const t1pv = t1Countries.reduce((s,g)=>s+(g.pageviews||0),0);
+        const estRev = ((c.pageviews||0)/1000*9*(t1pv/Math.max(c.pageviews||1,1)) + (c.pageviews||0)/1000*3.5*((c.pageviews||0-t1pv)/Math.max(c.pageviews||1,1)*0.4)).toFixed(2);
+        const highlights = [
+          topArticle ? `<div class="hl-item"><span class="hl-icon">📈</span><span class="hl-label">Top mover</span><span class="hl-val">${fmt.safe(topArticle.path)}</span><span class="hl-badge pos">+${((topArticle.current-topArticle.previous)/Math.max(topArticle.previous,1)*100).toFixed(0)}%</span></div>` : '',
+          `<div class="hl-item"><span class="hl-icon">💰</span><span class="hl-label">Est. ad revenue</span><span class="hl-val">$${parseFloat(estRev)>0?parseFloat(estRev).toFixed(0):'—'}</span><span class="hl-badge neu">this period</span></div>`,
+          bestSource ? `<div class="hl-item"><span class="hl-icon">🚦</span><span class="hl-label">Top channel</span><span class="hl-val">${fmt.safe(bestSource.channel)}</span><span class="hl-badge pos">${fmt.full(bestSource.sessions)} sessions</span></div>` : '',
+        ].filter(Boolean).join('<div class="hl-sep"></div>');
+        return highlights ? `<div class="highlights-bar mt-16">${highlights}</div>` : '';
+      })()}
+      <div class="card mt-16">
+        <div class="card-header"><h3>Traffic Trend</h3><span class="sub mono">${rangeLabel()}</span></div>
+        <div class="metric-toggles" id="ts-toggles">${togglesHtml}</div>
+        <div class="chart-box"><canvas id="chart-overview-series"></canvas></div>
+      </div>
+      <div class="card mt-16">
+        <div class="card-header"><h3>Live Pulse</h3><span class="sub">Last 30 minutes · updates every 60s</span></div>
+        <div class="chart-box-sm"><canvas id="chart-pulse"></canvas></div>
+      </div>
+      <div class="grid grid-2 mt-16">
+        <div class="card">
+          <div class="card-header"><h3>↑ Top Movers</h3><span class="sub">vs. previous period</span></div>
+          ${movers.rising?.length ? barList(movers.rising.slice(0,6),'path','current') : '<div class="empty-sm">No movers yet</div>'}
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Category Mix</h3><span class="sub">pageviews by vertical</span></div>
+          <div class="chart-box-sm"><canvas id="chart-overview-cats"></canvas></div>
+        </div>
+      </div>
+    `;
+
+    function renderTsChart() {
+      const mColors = {pageviews:'var(--accent)',users:'#3b82f6',sessions:'#10b981',engagedSessions:'#8b5cf6',newUsers:'#f59e0b'};
+      const datasets = STATE.tsMetrics.map((m,i) => ({
+        label: metricLabels[m], data: series.series.map(s=>s[m]||0),
+        color: mColors[m], fill: i===0,
+      }));
+      makeLineChart('chart-overview-series', series.series.map(s=>fmt.date(fmt.dateKey(s.date))), datasets);
+    }
+    renderTsChart();
+
+    // Metric toggle handlers
+    $$('#ts-toggles .mtoggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const m = btn.dataset.metric;
+        const idx = STATE.tsMetrics.indexOf(m);
+        if (idx >= 0) { if (STATE.tsMetrics.length > 1) STATE.tsMetrics.splice(idx,1); }
+        else STATE.tsMetrics.push(m);
+        localStorage.setItem('tff_ts_metrics', JSON.stringify(STATE.tsMetrics));
+        btn.classList.toggle('on', STATE.tsMetrics.includes(m));
+        renderTsChart();
+      });
+    });
+
+    const pLabels = pulse.pulse.map(p => p.minutesAgo===0?'now':`-${p.minutesAgo}m`);
+    makeLineChart('chart-pulse', pLabels, [{label:'Active users',data:pulse.pulse.map(p=>p.activeUsers),fill:true}]);
+    if (categories.categories?.length) {
+      makeDoughnutChart('chart-overview-cats', categories.categories.map(c=>c.category), categories.categories.map(c=>c.pageviews));
+    }
+  } catch(e) { el.innerHTML = infoBox('overview')+`<div class="error">Failed to load overview: ${fmt.safe(e.message)}</div>`; }
+}
+
+async function renderRealtime() {
+  const el = $('#view-realtime');
+  el.innerHTML = infoBox('realtime') + '<div class="loading">Loading realtime…</div>';
+  try {
+    const [rt, pulse] = await Promise.all([
+      api('/api/realtime',{ttl:30000,fresh:true}),
+      api('/api/pulse',{ttl:60000,fresh:true}),
+    ]);
+    el.innerHTML = infoBox('realtime') + `
+      <div class="realtime-hero">
+        <div class="rt-label"><span class="pulse-dot"></span>Active Users Right Now</div>
+        <div class="rt-big">${rt.activeUsers}</div>
+      </div>
+      <div class="card mb-16">
+        <div class="card-header"><h3>Live Pulse</h3><span class="sub">Last 30 minutes</span></div>
+        <div class="chart-box-sm"><canvas id="chart-rt-pulse"></canvas></div>
+      </div>
+      <div class="grid grid-4">
+        <div class="card"><div class="card-header"><h3>Top Pages</h3></div>${rt.topPages.length?barList(rt.topPages.map(p=>({...p,title:fmt.decode(p.title)})),'title','activeUsers'):'<div class="empty-sm">No active users</div>'}</div>
+        <div class="card"><div class="card-header"><h3>Countries</h3></div>${rt.topCountries.length?barList(rt.topCountries,'country','activeUsers'):'<div class="empty-sm">No data</div>'}</div>
+        <div class="card"><div class="card-header"><h3>Devices</h3></div>${rt.byDevice.length?barList(rt.byDevice,'device','activeUsers'):'<div class="empty-sm">No data</div>'}</div>
+        <div class="card"><div class="card-header"><h3>Referrers</h3></div>${rt.topReferrers&&rt.topReferrers.length?barList(rt.topReferrers,'referrer','activeUsers'):'<div class="empty-sm">No referrer data</div>'}</div>
+      </div>
+    `;
+    const pLabels = pulse.pulse.map(p=>p.minutesAgo===0?'now':`-${p.minutesAgo}m`);
+    makeLineChart('chart-rt-pulse', pLabels, [
+      {label:'Active users',data:pulse.pulse.map(p=>p.activeUsers),fill:true},
+      {label:'Pageviews',data:pulse.pulse.map(p=>p.pageviews),color:'#3b82f6'},
+    ]);
+  } catch(e) { el.innerHTML = infoBox('realtime')+`<div class="error">Failed to load realtime: ${fmt.safe(e.message)}</div>`; }
+}
+
+async function getArticlesWithMovers() {
+  const [data, movers] = await Promise.all([
+    api(`/api/articles?${rangeParam()}&limit=100`),
+    api(`/api/movers?${rangeParam()}`),
+  ]);
+  const moversMap = {};
+  [...(movers.rising||[]),...(movers.falling||[]),...(movers.all||[])].forEach(m => { if(!moversMap[m.path]) moversMap[m.path]=m; });
+  const rows = data.articles.map(a => {
+    const status = moversMap[a.path]?.status || 'Flat';
+    const daysOld = fmt.daysAgo(a.date);
+    const isEvergreen = daysOld >= 30 && a.pageviews >= 50;
+    const contentScore = a.engagementRate && daysOld > 0 ? Math.round((a.pageviews * a.engagementRate * 100) / Math.max(daysOld, 1)) : 0;
+    return {...a, status, daysOld, isEvergreen, contentScore, catDisplay:a.categories.join(', '), titleClean:fmt.decode(a.title)};
+  });
+  STATE.allArticlesCache = rows;
+  return rows;
+}
+
+async function renderArticles() {
+  const el = $('#view-articles');
+  el.innerHTML = infoBox('articles') + '<div class="loading">Loading articles…</div>';
+  try {
+    const rows = await getArticlesWithMovers();
+    const allCats = [...new Set(rows.flatMap(r=>r.categories))].sort();
+    const catFilter = STATE.chipFilter['articles-cat'];
+    const statusFilter = STATE.chipFilter['articles-status'];
+    const filtered = rows.filter(r => (!catFilter||r.categories.includes(catFilter)) && (!statusFilter||r.status===statusFilter));
+
+    STATE.exports['articles'] = filtered.map(r => ({
+      title:r.titleClean, path:r.path, author:r.author, categories:r.catDisplay, date:r.date,
+      pageviews:r.pageviews, users:r.users, engagementRate:r.engagementRate, avgDuration:r.avgDuration,
+      wordCount:r.wordCount, readingTime:r.readingTime, contentScore:r.contentScore,
+      impressions:r.impressions, clicks:r.clicks, ctr:r.ctr, position:r.position, status:r.status,
+    }));
+
+    const catChips = `<div class="chips mb-16"><span style="color:var(--text-dim);font-size:11px;text-transform:uppercase;letter-spacing:0.08em;margin-right:4px;align-self:center;">Category:</span><div class="chip ${!catFilter?'active':''}" data-chip="articles-cat|">All</div>${allCats.map(c=>`<div class="chip ${catFilter===c?'active':''}" data-chip="articles-cat|${fmt.safe(c)}">${fmt.safe(c)}</div>`).join('')}</div>`;
+    const statusChips = `<div class="chips mb-16"><span style="color:var(--text-dim);font-size:11px;text-transform:uppercase;letter-spacing:0.08em;margin-right:4px;align-self:center;">Status:</span><div class="chip ${!statusFilter?'active':''}" data-chip="articles-status|">All</div>${['Rising','New','Up','Flat','Down','Falling','Dead'].map(s=>`<div class="chip ${statusFilter===s?'active':''}" data-chip="articles-status|${s}">${s}</div>`).join('')}</div>`;
+
+    el.innerHTML = infoBox('articles') + catChips + statusChips + makeTable({
+      id:'articles', title:'All Articles', subtitle:`Range: ${rangeLabel()}`,
+      data:filtered, defaultSort:'pageviews', defaultSortDir:'desc',
+      searchKeys:['titleClean','catDisplay','author'], exportName:'articles', onRowClick:true,
+      columns:[
+        {key:'titleClean',label:'Article',render:a=>`<div class="title-cell">${a.featuredImage?`<img class="thumb" src="${fmt.safe(a.featuredImage)}" loading="lazy">`:'<div class="thumb"></div>'}<div><div class="title-text">${a.titleClean}${a.isEvergreen?' <span class="status-pill status-evergreen">Evergreen</span>':''}</div><div style="font-size:11px;color:var(--text-dim);margin-top:2px;">${a.categories.map(c=>`<span class="cat-badge ${fmt.catClass(c)}">${fmt.safe(c)}</span>`).join('')} · ${fmt.safe(a.author)} · ${fmt.dateTime(a.date)}</div></div></div>`},
+        {key:'status',label:'Status',tip:'status',render:a=>`<span class="status-pill status-${a.status.toLowerCase()}">${a.status}</span>`},
+        {key:'pageviews',label:'Pageviews',tip:'pageviews',num:true,fmt:fmt.full},
+        {key:'users',label:'Users',tip:'users',num:true,fmt:fmt.full},
+        {key:'engagementRate',label:'Eng. Rate',tip:'engagementRate',num:true,fmt:fmt.pct},
+        {key:'avgDuration',label:'Avg. Time',tip:'avgDuration',num:true,fmt:fmt.dur},
+        {key:'readingTime',label:'Read Time',tip:'readingTime',num:true,fmt:v=>v?v+'m':'—'},
+        {key:'contentScore',label:'Score',tip:'contentScore',num:true,fmt:fmt.full},
+        {key:'impressions',label:'Impr.',tip:'impressions',num:true,fmt:fmt.full},
+        {key:'clicks',label:'Clicks',tip:'clicks',num:true,fmt:fmt.full},
+        {key:'ctr',label:'CTR',tip:'ctr',num:true,fmt:fmt.pct},
+        {key:'position',label:'Pos.',tip:'position',num:true,render:r=>`<span class="${fmt.posClass(r.position)}">${fmt.pos(r.position)}</span>`},
+      ],
+    });
+  } catch(e) { el.innerHTML = infoBox('articles')+`<div class="error">Failed to load articles: ${fmt.safe(e.message)}</div>`; }
+}
+
+async function renderMovers() {
+  const el = $('#view-movers');
+  el.innerHTML = infoBox('movers') + '<div class="loading">Loading movers…</div>';
+  try {
+    const data = await api(`/api/movers?${rangeParam()}`);
+    STATE.exports['rising']=data.rising; STATE.exports['falling']=data.falling;
+    const cols = [
+      {key:'path',label:'Path',render:r=>`<div class="title-text">${fmt.safe(r.path)}</div>`},
+      {key:'status',label:'Status',tip:'status',render:r=>`<span class="status-pill status-${r.status.toLowerCase()}">${r.status}</span>`},
+      {key:'current',label:'Current',num:true,fmt:fmt.full},
+      {key:'previous',label:'Previous',num:true,fmt:fmt.full},
+      {key:'delta',label:'Δ',tip:'delta',num:true,render:r=>`<span style="color:${r.delta>=0?'var(--green)':'var(--accent)'}">${r.delta>=0?'+':''}${fmt.full(r.delta)}</span>`},
+      {key:'pctChange',label:'% Change',tip:'pctChange',num:true,render:r=>`<span style="color:${r.pctChange>=0?'var(--green)':'var(--accent)'}">${r.pctChange>=0?'+':''}${r.pctChange.toFixed(1)}%</span>`},
+    ];
+    el.innerHTML = infoBox('movers') + `
+      <div class="grid grid-2">
+        <div>${makeTable({id:'rising',title:'↑ Rising',subtitle:'Biggest traffic gains',data:data.rising,defaultSort:'delta',columns:cols,exportName:'rising'})}</div>
+        <div>${makeTable({id:'falling',title:'↓ Falling',subtitle:'Biggest traffic losses',data:data.falling,defaultSort:'delta',defaultSortDir:'asc',columns:cols,exportName:'falling'})}</div>
+      </div>
+      <div class="mt-16">${makeTable({id:'all-movers',title:'All Changes',data:data.all,defaultSort:'delta',columns:cols,searchKeys:['path']})}</div>
+    `;
+  } catch(e) { el.innerHTML = infoBox('movers')+`<div class="error">Failed to load movers: ${fmt.safe(e.message)}</div>`; }
+}
+
+async function renderInsights() {
+  const el = $('#view-insights');
+  el.innerHTML = infoBox('insights') + '<div class="loading">Analyzing your data…</div>';
+  try {
+    const [articles, queries, matrix] = await Promise.all([
+      getArticlesWithMovers(),
+      api(`/api/queries?${rangeParam()}&limit=500`),
+      api(`/api/query-page-matrix?${rangeParam()}&limit=1000`),
+    ]);
+    const evergreen = articles.filter(a=>a.daysOld>=30&&a.pageviews>=50).sort((a,b)=>b.pageviews-a.pageviews);
+    const underperformers = articles.filter(a=>a.daysOld<=14&&a.daysOld>=1&&a.pageviews<20).sort((a,b)=>a.pageviews-b.pageviews);
+    const opportunities = (queries.queries||[]).filter(q=>q.position>=6&&q.position<=20&&q.impressions>=20&&!q.isBrand).sort((a,b)=>b.impressions-a.impressions);
+    const queryPages = {};
+    (matrix.rows||[]).forEach(r=>{ if(!queryPages[r.query]) queryPages[r.query]=[]; queryPages[r.query].push(r); });
+    const cannibalization = Object.entries(queryPages).filter(([,pages])=>pages.length>=2&&pages.reduce((s,p)=>s+p.impressions,0)>=20).map(([query,pages])=>({query,pages:pages.length,pathList:pages.map(p=>p.path).join(' · '),totalImpressions:pages.reduce((s,p)=>s+p.impressions,0),totalClicks:pages.reduce((s,p)=>s+p.clicks,0)})).sort((a,b)=>b.totalImpressions-a.totalImpressions);
+    const refreshCandidates = articles.filter(a=>a.daysOld>=60&&a.pageviews>=30).sort((a,b)=>b.pageviews-a.pageviews);
+
+    el.innerHTML = infoBox('insights') + `
+      <div class="grid grid-4 mb-16">
+        <div class="card"><div class="card-title">Evergreen</div><div class="kpi-sm">${evergreen.length}</div><div class="kpi-delta flat">articles earning 30+ days after publish</div></div>
+        <div class="card"><div class="card-title">Opportunities</div><div class="kpi-sm">${opportunities.length}</div><div class="kpi-delta flat">queries ranking position 6–20</div></div>
+        <div class="card"><div class="card-title">Cannibalization</div><div class="kpi-sm">${cannibalization.length}</div><div class="kpi-delta flat">queries with 2+ pages competing</div></div>
+        <div class="card"><div class="card-title">Underperformers</div><div class="kpi-sm">${underperformers.length}</div><div class="kpi-delta flat">recent articles with low traction</div></div>
+      </div>
+      <div class="section-title">🌱 Evergreen Articles</div>
+      ${makeTable({id:'insights-evergreen',title:'Evergreen',subtitle:'30+ days old, 50+ pageviews',data:evergreen,onRowClick:true,defaultSort:'pageviews',searchKeys:['titleClean'],exportName:'insights-evergreen',columns:[
+        {key:'titleClean',label:'Article',render:a=>`<div class="title-cell"><div><div class="title-text">${a.titleClean}</div><div style="font-size:11px;color:var(--text-dim);margin-top:2px;">${fmt.dateTime(a.date)} · ${a.daysOld}d old</div></div></div>`},
+        {key:'daysOld',label:'Age',num:true,fmt:v=>v+'d'},
+        {key:'pageviews',label:'Pageviews',tip:'pageviews',num:true,fmt:fmt.full},
+        {key:'contentScore',label:'Score',tip:'contentScore',num:true,fmt:fmt.full},
+        {key:'clicks',label:'GSC Clicks',tip:'clicks',num:true,fmt:fmt.full},
+      ]})}
+      <div class="section-title mt-24">🎯 Query Opportunities</div>
+      ${makeTable({id:'insights-opportunities',title:'Non-brand, position 6–20, 20+ impressions',data:opportunities,defaultSort:'impressions',exportName:'insights-opportunities',searchKeys:['query'],columns:[
+        {key:'query',label:'Query',render:r=>`<div class="title-text" style="max-width:360px;">${fmt.safe(r.query)}</div>`},
+        {key:'impressions',label:'Impressions',tip:'impressions',num:true,fmt:fmt.full},
+        {key:'clicks',label:'Clicks',tip:'clicks',num:true,fmt:fmt.full},
+        {key:'ctr',label:'CTR',tip:'ctr',num:true,fmt:fmt.pct},
+        {key:'position',label:'Pos.',tip:'position',num:true,render:r=>`<span class="${fmt.posClass(r.position)}">${fmt.pos(r.position)}</span>`},
+      ]})}
+      <div class="section-title mt-24">⚠ Cannibalization Warnings</div>
+      ${makeTable({id:'insights-cannibalization',title:'Queries with 2+ ranking pages',data:cannibalization,defaultSort:'totalImpressions',exportName:'insights-cannibalization',searchKeys:['query','pathList'],columns:[
+        {key:'query',label:'Query',render:r=>`<div class="title-text">${fmt.safe(r.query)}</div>`},
+        {key:'pages',label:'Pages',num:true,fmt:v=>v+' pages'},
+        {key:'totalImpressions',label:'Total Impr.',num:true,fmt:fmt.full},
+        {key:'totalClicks',label:'Total Clicks',num:true,fmt:fmt.full},
+      ]})}
+      <div class="section-title mt-24">🔄 Refresh Candidates</div>
+      ${makeTable({id:'insights-refresh',title:'60+ days old, still getting traffic',data:refreshCandidates,onRowClick:true,defaultSort:'pageviews',exportName:'insights-refresh',searchKeys:['titleClean'],columns:[
+        {key:'titleClean',label:'Article',render:a=>`<div class="title-text">${a.titleClean}</div>`},
+        {key:'daysOld',label:'Age',num:true,fmt:v=>v+'d'},
+        {key:'pageviews',label:'Pageviews',num:true,fmt:fmt.full},
+        {key:'clicks',label:'GSC Clicks',num:true,fmt:fmt.full},
+      ]})}
+      <div class="section-title mt-24">📉 Underperformers</div>
+      ${makeTable({id:'insights-under',title:'Published last 14 days, under 20 pageviews',data:underperformers,onRowClick:true,defaultSort:'pageviews',defaultSortDir:'asc',columns:[
+        {key:'titleClean',label:'Article',render:a=>`<div class="title-text">${a.titleClean}</div>`},
+        {key:'daysOld',label:'Age',num:true,fmt:v=>v+'d'},
+        {key:'pageviews',label:'Pageviews',num:true,fmt:fmt.full},
+        {key:'impressions',label:'Impressions',num:true,fmt:fmt.full},
+      ]})}
+    `;
+  } catch(e) { el.innerHTML = infoBox('insights')+`<div class="error">Failed to load insights: ${fmt.safe(e.message)}</div>`; }
+}
+
+async function renderContentOps() {
+  const el = $('#view-contentops');
+  el.innerHTML = infoBox('contentops') + '<div class="loading">Loading content operations…</div>';
+  try {
+    const articles = await getArticlesWithMovers();
+    const today = new Date(); today.setHours(0,0,0,0);
+    const dayMs = 86400000;
+    const weeks = 6;
+    const start = new Date(today.getTime()-(weeks*7-1)*dayMs);
+    start.setDate(start.getDate()-start.getDay());
+    const calData = {};
+    articles.forEach(a=>{ const d=new Date(a.date); const key=d.toISOString().slice(0,10); if(!calData[key]) calData[key]={count:0,pageviews:0}; calData[key].count++; calData[key].pageviews+=a.pageviews; });
+    let calCells='';
+    ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(n=>calCells+=`<div class="cal-day-name">${n}</div>`);
+    for(let i=0;i<weeks*7;i++){const d=new Date(start.getTime()+i*dayMs);const key=d.toISOString().slice(0,10);const data=calData[key];const isToday=d.getTime()===today.getTime();const future=d.getTime()>today.getTime();if(future){calCells+=`<div class="cal-cell empty"></div>`;}else{calCells+=`<div class="cal-cell ${data?'has-articles':''} ${isToday?'today':''}"><div>${d.getDate()}</div>${data?`<div class="cal-count">${data.count}</div>`:''}</div>`;}}
+    const velocityMap={};
+    for(let i=0;i<30;i++){const d=new Date(today.getTime()-i*dayMs);velocityMap[d.toISOString().slice(0,10)]=0;}
+    articles.forEach(a=>{const key=new Date(a.date).toISOString().slice(0,10);if(velocityMap[key]!==undefined)velocityMap[key]++;});
+    const velocityEntries=Object.entries(velocityMap).sort((a,b)=>a[0].localeCompare(b[0]));
+    const avgVelocity=(velocityEntries.reduce((s,[,v])=>s+v,0)/velocityEntries.length).toFixed(1);
+    const authorMap={};
+    articles.forEach(a=>{if(!authorMap[a.author])authorMap[a.author]={author:a.author,articles:0,pageviews:0,users:0,clicks:0};authorMap[a.author].articles++;authorMap[a.author].pageviews+=a.pageviews;authorMap[a.author].users+=a.users;authorMap[a.author].clicks+=a.clicks||0;});
+    const authors=Object.values(authorMap).sort((a,b)=>b.pageviews-a.pageviews);
+    const hourCounts=Array(24).fill(0);
+    articles.forEach(a=>hourCounts[new Date(a.date).getHours()]++);
+    STATE.exports['authors-ops']=authors;
+
+    el.innerHTML = infoBox('contentops') + `
+      <div class="grid grid-4 mb-16">
+        <div class="card"><div class="card-title">Total Articles</div><div class="kpi-sm">${articles.length}</div></div>
+        <div class="card"><div class="card-title">Avg. Daily Velocity</div><div class="kpi-sm">${avgVelocity}</div><div class="kpi-delta flat">articles/day (last 30d)</div></div>
+        <div class="card"><div class="card-title">Active Authors</div><div class="kpi-sm">${authors.length}</div></div>
+        <div class="card"><div class="card-title">Total Pageviews</div><div class="kpi-sm">${fmt.num(articles.reduce((s,a)=>s+a.pageviews,0))}</div><div class="kpi-delta flat">range: ${rangeLabel()}</div></div>
+      </div>
+      <div class="card mb-16"><div class="card-header"><h3>📅 Publishing Calendar</h3><span class="sub">Last 6 weeks · number = articles published that day</span></div><div class="calendar">${calCells}</div></div>
+      <div class="card mb-16"><div class="card-header"><h3>📊 Publishing Velocity</h3><span class="sub">Articles per day (last 30 days)</span></div><div class="chart-box"><canvas id="chart-velocity"></canvas></div></div>
+      <div class="grid grid-2 mb-16">
+        <div class="card"><div class="card-header"><h3>⏰ Publishing Hours</h3><span class="sub">When you publish (local time)</span></div><div class="chart-box"><canvas id="chart-hours"></canvas></div></div>
+        <div>${makeTable({id:'authors-ops',title:'✍ Author Leaderboard',subtitle:'By total pageviews',data:authors,defaultSort:'pageviews',exportName:'authors-ops',columns:[{key:'author',label:'Author'},{key:'articles',label:'Articles',num:true,fmt:fmt.full},{key:'pageviews',label:'PV',tip:'pageviews',num:true,fmt:fmt.num},{key:'clicks',label:'GSC Clicks',tip:'clicks',num:true,fmt:fmt.num}]})}</div>
+      </div>
+    `;
+    makeBarChart('chart-velocity',velocityEntries.map(([d])=>fmt.date(d)),[{label:'Articles',data:velocityEntries.map(([,v])=>v)}]);
+    makeBarChart('chart-hours',hourCounts.map((_,i)=>`${i}:00`),[{label:'Articles',data:hourCounts}]);
+  } catch(e) { el.innerHTML = infoBox('contentops')+`<div class="error">Failed to load content ops: ${fmt.safe(e.message)}</div>`; }
+}
+
+async function renderGoals() {
+  const el = $('#view-goals');
+  el.innerHTML = infoBox('goals') + '<div class="loading">Loading goals…</div>';
+  try {
+    const overview = await api(`/api/overview?${rangeParam()}`);
+    const c = overview.current;
+    const goals = STATE.goals[STATE.range] || {};
+    const goalCard = (key,label,cur,formatter) => {
+      const goal=goals[key]||0; const pct=goal>0?Math.min(100,(cur/goal)*100):0; const met=cur>=goal&&goal>0;
+      return `<div class="card"><div class="card-title">${label}</div><div class="kpi-sm">${formatter?formatter(cur):fmt.full(cur)}</div><div style="color:var(--text-dim);font-size:12px;margin-top:4px;">of <input type="number" class="goal-input" data-goal="${key}" value="${goal}" style="background:transparent;border:none;color:${met?'var(--green)':'var(--accent)'};font-family:'JetBrains Mono',monospace;font-weight:600;font-size:12px;width:100px;" min="0"> target</div><div class="goal-progress"><div class="goal-progress-fill ${met?'met':''}" style="width:${pct}%"></div></div><div style="color:var(--text-dim);font-size:11px;margin-top:6px;">${met?'✓ Goal met!':`${pct.toFixed(0)}% of target`}</div></div>`;
+    };
+    el.innerHTML = infoBox('goals') + `
+      <div style="color:var(--text-muted);font-size:13px;margin-bottom:16px;">Targets for <strong style="color:var(--text);">${rangeLabel()}</strong>. Saved per time range in your browser.</div>
+      <div class="grid grid-3">
+        ${goalCard('pageviews','Pageviews',c.pageviews)}
+        ${goalCard('users','Users',c.users)}
+        ${goalCard('sessions','Sessions',c.sessions)}
+        ${goalCard('engagedSessions','Engaged Sessions',c.engagedSessions)}
+        ${goalCard('newUsers','New Users',c.newUsers)}
+        ${goalCard('clicks','GSC Clicks (via Sources)',0)}
+      </div>
+      <div class="card mt-16"><div class="card-title">💡 Quick tip</div><div style="color:var(--text-muted);font-size:13px;line-height:1.6;">Set <strong style="color:var(--text);">achievable but stretchy</strong> goals. A good starting point: take your current number and add 20%.</div></div>
+    `;
+    $$('.goal-input').forEach(inp => {
+      inp.addEventListener('change', e => { const key=e.target.dataset.goal; const val=parseInt(e.target.value)||0; if(!STATE.goals[STATE.range])STATE.goals[STATE.range]={}; STATE.goals[STATE.range][key]=val; localStorage.setItem('tff_goals',JSON.stringify(STATE.goals)); renderView('goals'); });
+    });
+  } catch(e) { el.innerHTML = infoBox('goals')+`<div class="error">Failed to load goals: ${fmt.safe(e.message)}</div>`; }
+}
+
+async function renderSources() {
+  const el = $('#view-sources');
+  el.innerHTML = infoBox('sources') + '<div class="loading">Loading sources…</div>';
+  try {
+    const data = await api(`/api/sources?${rangeParam()}`);
+    STATE.exports['channels']=data.channels; STATE.exports['sources-list']=data.sources;
+
+    // Derive social breakdown from sources
+    const SOCIAL_MAP = {
+      facebook:['facebook','fb','m.facebook.com'],
+      twitter:['twitter','t.co','x.com'],
+      instagram:['instagram','l.instagram.com'],
+      youtube:['youtube','youtu.be'],
+      linkedin:['linkedin','lnkd.in'],
+      pinterest:['pinterest'],
+      reddit:['reddit','old.reddit.com'],
+      tiktok:['tiktok'],
+      snapchat:['snapchat'],
+      whatsapp:['whatsapp','wa.me'],
+    };
+    const SOCIAL_ICONS = {facebook:'📘',twitter:'🐦',instagram:'📸',youtube:'▶️',linkedin:'💼',pinterest:'📌',reddit:'🤖',tiktok:'🎵',snapchat:'👻',whatsapp:'💬'};
+    const socialRows = [];
+    Object.entries(SOCIAL_MAP).forEach(([name, patterns]) => {
+      const matched = data.sources.filter(s => patterns.some(p => (s.source||'').toLowerCase().includes(p)));
+      if (matched.length) {
+        const sessions=matched.reduce((s,r)=>s+(r.sessions||0),0);
+        const users=matched.reduce((s,r)=>s+(r.users||0),0);
+        socialRows.push({platform:name, icon:SOCIAL_ICONS[name]||'🔗', sessions, users});
+      }
+    });
+    socialRows.sort((a,b)=>b.sessions-a.sessions);
+    const totalSocialSessions=socialRows.reduce((s,r)=>s+r.sessions,0);
+
+    el.innerHTML = infoBox('sources') + `
+      <div class="grid grid-2 mb-16">
+        <div class="card"><div class="card-header"><h3>${tip('Channels','channel')}</h3></div><div class="chart-box"><canvas id="chart-channels"></canvas></div></div>
+        <div class="card"><div class="card-header"><h3>${tip('Top Sources','source')}</h3></div>${data.sources.length?barList(data.sources.slice(0,10),'source','sessions'):'<div class="empty-sm">No data</div>'}</div>
+      </div>
+      ${makeTable({id:'channels-table',title:'Channels',data:data.channels,defaultSort:'sessions',exportName:'channels',columns:[{key:'channel',label:'Channel',tip:'channel'},{key:'sessions',label:'Sessions',tip:'sessions',num:true,fmt:fmt.full},{key:'users',label:'Users',tip:'users',num:true,fmt:fmt.full},{key:'pageviews',label:'Pageviews',tip:'pageviews',num:true,fmt:fmt.full}]})}
+      <div class="mt-16 card">
+        <div class="card-header"><h3>Social Breakdown</h3><span class="sub">${fmt.full(totalSocialSessions)} sessions from social</span></div>
+        ${socialRows.length ? `
+          <div class="social-grid">
+            ${socialRows.map(r=>{
+              const pct=totalSocialSessions>0?(r.sessions/totalSocialSessions*100).toFixed(1):'0';
+              return `<div class="social-card">
+                <div class="social-icon">${r.icon}</div>
+                <div class="social-name">${r.platform.charAt(0).toUpperCase()+r.platform.slice(1)}</div>
+                <div class="social-sessions">${fmt.full(r.sessions)}</div>
+                <div class="social-bar-wrap"><div class="social-bar" style="width:${pct}%"></div></div>
+                <div class="social-pct">${pct}%</div>
+              </div>`;
+            }).join('')}
+          </div>` : '<div class="empty-sm">No social traffic detected in this period</div>'}
+      </div>
+      <div class="mt-16">${makeTable({id:'sources-table',title:'All Sources',data:data.sources,defaultSort:'sessions',exportName:'sources-list',searchKeys:['source'],columns:[{key:'source',label:'Source',tip:'source'},{key:'sessions',label:'Sessions',tip:'sessions',num:true,fmt:fmt.full},{key:'users',label:'Users',tip:'users',num:true,fmt:fmt.full}]})}</div>
+    `;
+    makeDoughnutChart('chart-channels',data.channels.map(c=>c.channel),data.channels.map(c=>c.sessions));
+  } catch(e) { el.innerHTML = infoBox('sources')+`<div class="error">Failed to load sources: ${fmt.safe(e.message)}</div>`; }
+}
+
+async function renderGeo() {
+  const el = $('#view-geo');
+  el.innerHTML = infoBox('geo') + '<div class="loading">Loading geography…</div>';
+  try {
+    const data = await api(`/api/geo?${rangeParam()}`);
+    STATE.exports['countries']=data.countries; STATE.exports['cities']=data.cities;
+    const tier1=['United States','United Kingdom','Canada','Australia','New Zealand','Ireland'];
+    const tier2=['Germany','France','Netherlands','Sweden','Norway','Denmark','Finland','Switzerland','Austria','Belgium','Italy','Spain','Japan','Singapore','South Korea','Hong Kong','New Zealand'];
+    const geoRPM = country => tier1.includes(country)?9:tier2.includes(country)?3.5:0.80;
+    const countriesWithRev = data.countries.map(c=>({...c, rpm:geoRPM(c.country), estRevenue:(c.pageviews||0)/1000*geoRPM(c.country), tier:tier1.includes(c.country)?'T1':tier2.includes(c.country)?'T2':'T3'}));
+    const totalUsers=data.countries.reduce((s,c)=>s+c.users,0);
+    const tier1Users=data.countries.filter(c=>tier1.includes(c.country)).reduce((s,c)=>s+c.users,0);
+    const tier1Pct=totalUsers>0?(tier1Users/totalUsers*100).toFixed(1):'0';
+    const totalEstRev=countriesWithRev.reduce((s,c)=>s+c.estRevenue,0);
+    el.innerHTML = infoBox('geo') + `
+      <div class="grid grid-4 mb-16">
+        <div class="card"><div class="card-title">Total Users</div><div class="kpi-sm">${fmt.full(totalUsers)}</div></div>
+        <div class="card"><div class="card-title">Tier-1 Traffic</div><div class="kpi-sm">${tier1Pct}%</div><div class="kpi-delta ${parseFloat(tier1Pct)>=50?'up':'down'}">US/UK/CA/AU/NZ/IE · ${parseFloat(tier1Pct)>=50?'Raptive-ready':'Below 50% target'}</div></div>
+        <div class="card"><div class="card-title">Countries Reached</div><div class="kpi-sm">${data.countries.length}</div></div>
+        <div class="card"><div class="card-title">Est. Ad Revenue</div><div class="kpi-sm">$${totalEstRev.toFixed(0)}</div><div class="kpi-delta flat">Based on RPM tiers</div></div>
+      </div>
+      <div class="card mb-16"><div class="card-header"><h3>Top Countries</h3></div>${barList(data.countries.slice(0,15),'country','users')}</div>
+      ${makeTable({id:'countries',title:'All Countries',data:countriesWithRev,defaultSort:'users',exportName:'countries',searchKeys:['country'],columns:[
+        {key:'country',label:'Country'},
+        {key:'tier',label:'Tier',render:r=>`<span class="tier-badge tier-${r.tier.toLowerCase()}">${r.tier}</span>`},
+        {key:'users',label:'Users',tip:'users',num:true,fmt:fmt.full},
+        {key:'pageviews',label:'Pageviews',tip:'pageviews',num:true,fmt:fmt.full},
+        {key:'sessions',label:'Sessions',tip:'sessions',num:true,fmt:fmt.full},
+        {key:'rpm',label:'RPM',num:true,fmt:v=>'$'+v.toFixed(2)},
+        {key:'estRevenue',label:'Est. Revenue',num:true,fmt:v=>'$'+v.toFixed(2)},
+      ]})}
+      <div class="mt-16">${makeTable({id:'cities',title:'Top Cities',data:data.cities,defaultSort:'users',exportName:'cities',searchKeys:['city','country'],columns:[{key:'city',label:'City'},{key:'country',label:'Country'},{key:'users',label:'Users',tip:'users',num:true,fmt:fmt.full},{key:'pageviews',label:'Pageviews',tip:'pageviews',num:true,fmt:fmt.full}]})}</div>
+    `;
+  } catch(e) { el.innerHTML = infoBox('geo')+`<div class="error">Failed to load geography: ${fmt.safe(e.message)}</div>`; }
+}
+
+async function renderDevices() {
+  const el = $('#view-devices');
+  el.innerHTML = infoBox('devices') + '<div class="loading">Loading devices…</div>';
+  try {
+    const data = await api(`/api/devices?${rangeParam()}`);
+    const totalUsers=data.devices.reduce((s,d)=>s+d.users,0);
+    const mobilePct=totalUsers>0?Math.round((data.devices.find(d=>d.name==='mobile')?.users||0)/totalUsers*100):0;
+    el.innerHTML = infoBox('devices') + `
+      <div class="grid grid-3 mb-16">
+        <div class="card"><div class="card-header"><h3>${tip('Device Category','deviceCategory')}</h3></div><div class="chart-box"><canvas id="chart-devices"></canvas></div></div>
+        <div class="card"><div class="card-header"><h3>Top OS</h3></div>${barList(data.os.slice(0,8),'name','users')}</div>
+        <div class="card"><div class="card-header"><h3>Top Browsers</h3></div>${barList(data.browsers.slice(0,8),'name','users')}</div>
+      </div>
+      <div class="card mb-16"><div class="card-title">Mobile Share</div><div class="kpi">${mobilePct}%</div><div class="kpi-delta flat">News sites typically run 60–80% mobile</div></div>
+      ${makeTable({id:'devices-table',title:'Devices',data:data.devices,defaultSort:'users',columns:[{key:'name',label:'Device'},{key:'users',label:'Users',tip:'users',num:true,fmt:fmt.full},{key:'pageviews',label:'Pageviews',tip:'pageviews',num:true,fmt:fmt.full}]})}
+    `;
+    makeDoughnutChart('chart-devices',data.devices.map(d=>d.name),data.devices.map(d=>d.users));
+  } catch(e) { el.innerHTML = infoBox('devices')+`<div class="error">Failed to load devices: ${fmt.safe(e.message)}</div>`; }
+}
+
+async function renderCategories() {
+  const el = $('#view-categories');
+  el.innerHTML = infoBox('categories') + '<div class="loading">Loading categories…</div>';
+  try {
+    const data = await api(`/api/categories?${rangeParam()}`);
+    STATE.exports['categories']=data.categories;
+    el.innerHTML = infoBox('categories') + `
+      <div class="card mb-16"><div class="card-header"><h3>Pageviews by Category</h3></div><div class="chart-box"><canvas id="chart-cats"></canvas></div></div>
+      ${makeTable({id:'cats-table',title:'Categories',data:data.categories,defaultSort:'pageviews',exportName:'categories',columns:[{key:'category',label:'Category',render:r=>`<span class="cat-badge ${fmt.catClass(r.category)}">${fmt.safe(r.category)}</span>`},{key:'articles',label:'Articles',tip:'articles',num:true,fmt:fmt.full},{key:'pageviews',label:'Pageviews',tip:'pageviews',num:true,fmt:fmt.full},{key:'users',label:'Users',tip:'users',num:true,fmt:fmt.full}]})}
+    `;
+    makeBarChart('chart-cats',data.categories.map(c=>c.category),[{label:'Pageviews',data:data.categories.map(c=>c.pageviews)}]);
+  } catch(e) { el.innerHTML = infoBox('categories')+`<div class="error">Failed to load categories: ${fmt.safe(e.message)}</div>`; }
+}
+
+async function renderQueries() {
+  const el = $('#view-queries');
+  el.innerHTML = infoBox('queries') + '<div class="loading">Loading queries…</div>';
+  try {
+    const data = await api(`/api/queries?${rangeParam()}&limit=500`);
+    STATE.exports['queries']=data.queries;
+    const total=data.brandTotal+data.nonBrandTotal;
+    const brandPct=total?(data.brandTotal/total*100):0;
+    const opportunities=(data.queries||[]).filter(q=>q.position>=6&&q.position<=20&&q.impressions>=20&&!q.isBrand).slice(0,10);
+    const page1=data.queries.filter(q=>q.position<=10).length;
+    const avgCtr=data.queries.length?(data.queries.reduce((s,q)=>s+q.ctr,0)/data.queries.length*100).toFixed(1):0;
+    el.innerHTML = infoBox('queries') + `
+      <div class="grid grid-4 mb-16">
+        <div class="card"><div class="card-title">Total Queries</div><div class="kpi-sm">${fmt.full(data.queries.length)}</div></div>
+        <div class="card"><div class="card-title">Page 1 Rankings</div><div class="kpi-sm">${fmt.full(page1)}</div><div class="kpi-delta flat">queries at position ≤ 10</div></div>
+        <div class="card"><div class="card-title">Brand Clicks</div><div class="kpi-sm">${fmt.full(data.brandTotal)}</div><div class="kpi-delta flat">${brandPct.toFixed(1)}% of total</div></div>
+        <div class="card"><div class="card-title">${tip('Avg. CTR','ctr')}</div><div class="kpi-sm">${avgCtr}%</div></div>
+      </div>
+      ${opportunities.length?`<div class="section-title">🎯 Top Opportunities</div>${makeTable({id:'query-opps',title:'Quick wins',data:opportunities,defaultSort:'impressions',columns:[{key:'query',label:'Query'},{key:'impressions',label:'Impr.',tip:'impressions',num:true,fmt:fmt.full},{key:'clicks',label:'Clicks',tip:'clicks',num:true,fmt:fmt.full},{key:'position',label:'Position',tip:'position',num:true,render:r=>`<span class="${fmt.posClass(r.position)}">${fmt.pos(r.position)}</span>`}]})}`:``}
+      <div class="section-title mt-24">All Queries</div>
+      ${makeTable({id:'queries-table',title:'Search Queries',data:data.queries,defaultSort:'impressions',exportName:'queries',searchKeys:['query'],columns:[
+        {key:'query',label:'Query',render:r=>`<div class="title-text" style="max-width:420px;">${fmt.safe(r.query)}${r.isBrand?' <span class="cat-badge cat-default">brand</span>':''}</div>`},
+        {key:'impressions',label:'Impressions',tip:'impressions',num:true,fmt:fmt.full},
+        {key:'clicks',label:'Clicks',tip:'clicks',num:true,fmt:fmt.full},
+        {key:'ctr',label:'CTR',tip:'ctr',num:true,fmt:fmt.pct},
+        {key:'position',label:'Position',tip:'position',num:true,render:r=>`<span class="${fmt.posClass(r.position)}">${fmt.pos(r.position)}</span>`},
+      ]})}
+    `;
+  } catch(e) { el.innerHTML = infoBox('queries')+`<div class="error">Failed to load queries: ${fmt.safe(e.message)}</div>`; }
+}
+
+async function renderPages() {
+  const el = $('#view-pages');
+  el.innerHTML = infoBox('pages') + '<div class="loading">Loading pages…</div>';
+  try {
+    const data = await api(`/api/pages?${rangeParam()}&limit=500`);
+    STATE.exports['pages']=data.pages;
+    el.innerHTML = infoBox('pages') + makeTable({
+      id:'pages-table', title:'Search Console Pages', data:data.pages,
+      defaultSort:'impressions', exportName:'pages', searchKeys:['path','page'],
+      columns:[
+        {key:'path',label:'Page',render:r=>`<div class="title-text">${fmt.safe(r.path)}</div>`},
+        {key:'impressions',label:'Impressions',tip:'impressions',num:true,fmt:fmt.full},
+        {key:'clicks',label:'Clicks',tip:'clicks',num:true,fmt:fmt.full},
+        {key:'ctr',label:'CTR',tip:'ctr',num:true,fmt:fmt.pct},
+        {key:'position',label:'Position',tip:'position',num:true,render:r=>`<span class="${fmt.posClass(r.position)}">${fmt.pos(r.position)}</span>`},
+      ],
+    });
+  } catch(e) { el.innerHTML = infoBox('pages')+`<div class="error">Failed to load pages: ${fmt.safe(e.message)}</div>`; }
+}
+
+async function renderMatrix() {
+  const el = $('#view-matrix');
+  el.innerHTML = infoBox('matrix') + '<div class="loading">Loading matrix…</div>';
+  try {
+    const data = await api(`/api/query-page-matrix?${rangeParam()}&limit=1000`);
+    STATE.exports['matrix']=data.rows;
+    const queryPages={};
+    data.rows.forEach(r=>{ if(!queryPages[r.query]) queryPages[r.query]=[]; queryPages[r.query].push(r); });
+    const cannibalized=Object.entries(queryPages).filter(([,pages])=>pages.length>=2).length;
+    el.innerHTML = infoBox('matrix') + `
+      <div class="grid grid-3 mb-16">
+        <div class="card"><div class="card-title">Total Pairs</div><div class="kpi-sm">${fmt.full(data.rows.length)}</div></div>
+        <div class="card"><div class="card-title">Unique Queries</div><div class="kpi-sm">${fmt.full(Object.keys(queryPages).length)}</div></div>
+        <div class="card"><div class="card-title">Cannibalized</div><div class="kpi-sm">${fmt.full(cannibalized)}</div><div class="kpi-delta flat">queries with 2+ pages ranking</div></div>
+      </div>
+      ${makeTable({id:'matrix-table',title:'Query × Page Matrix',data:data.rows,defaultSort:'impressions',exportName:'matrix',searchKeys:['query','path'],columns:[
+        {key:'query',label:'Query',render:r=>`<div class="title-text" style="max-width:280px;">${fmt.safe(r.query)}</div>`},
+        {key:'path',label:'Page',render:r=>`<div class="title-text" style="max-width:280px;color:var(--text-muted);">${fmt.safe(r.path)}</div>`},
+        {key:'impressions',label:'Impr.',tip:'impressions',num:true,fmt:fmt.full},
+        {key:'clicks',label:'Clicks',tip:'clicks',num:true,fmt:fmt.full},
+        {key:'ctr',label:'CTR',tip:'ctr',num:true,fmt:fmt.pct},
+        {key:'position',label:'Pos.',tip:'position',num:true,render:r=>`<span class="${fmt.posClass(r.position)}">${fmt.pos(r.position)}</span>`},
+      ]})}
+    `;
+  } catch(e) { el.innerHTML = infoBox('matrix')+`<div class="error">Failed to load matrix: ${fmt.safe(e.message)}</div>`; }
+}
+
+// ============================================================
+// NEW VIEW RENDERERS
+// ============================================================
+
+async function renderAudience() {
+  const el = $('#view-audience');
+  el.innerHTML = infoBox('audience') + '<div class="loading">Loading audience…</div>';
+  try {
+    const data = await api(`/api/audience?${rangeParam()}`);
+    const s = data.summary;
+    el.innerHTML = infoBox('audience') + `
+      <div class="grid grid-4 mb-16">
+        <div class="card"><div class="card-title">${tip('Total Users','users')}</div><div class="kpi">${fmt.full(s.totalUsers)}</div></div>
+        <div class="card"><div class="card-title">${tip('New Users','newUsers')}</div><div class="kpi">${fmt.full(s.newUsers)}</div><div class="kpi-delta flat">${(s.newUserPct*100).toFixed(1)}% of total</div></div>
+        <div class="card"><div class="card-title">${tip('Returning Users','returningUsers')}</div><div class="kpi">${fmt.full(s.returningUsers)}</div><div class="kpi-delta flat">${(100-s.newUserPct*100).toFixed(1)}% of total</div></div>
+        <div class="card"><div class="card-title">${tip('Engagement Rate','engagementRate')}</div><div class="kpi">${(s.engagementRate*100).toFixed(1)}%</div></div>
+      </div>
+      <div class="grid grid-3 mb-16">
+        <div class="card"><div class="card-title">${tip('Sessions / User','sessionsPerUser')}</div><div class="kpi-sm">${s.sessionsPerUser.toFixed(2)}</div><div class="kpi-delta flat">avg return rate</div></div>
+        <div class="card"><div class="card-title">${tip('Avg. Engagement Time','avgEngagementDuration')}</div><div class="kpi-sm">${fmt.dur(s.avgEngagementDuration)}</div></div>
+        <div class="card"><div class="card-title">${tip('Pages / Session','pagesPerSession')}</div><div class="kpi-sm">${s.pagesPerSession.toFixed(2)}</div></div>
+      </div>
+      <div class="grid grid-2 mb-16">
+        <div class="card">
+          <div class="card-header"><h3>New vs. Returning</h3></div>
+          <div class="chart-box-sm"><canvas id="chart-aud-nvr"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Acquisition Channels</h3></div>
+          ${data.byAcquisitionChannel.length ? barList(data.byAcquisitionChannel.slice(0,8),'channel','users') : '<div class="empty-sm">No data</div>'}
+        </div>
+      </div>
+      ${makeTable({id:'aud-channel-table',title:'Acquisition by Channel',data:data.byAcquisitionChannel,defaultSort:'users',columns:[
+        {key:'channel',label:'Channel'},{key:'users',label:'Users',tip:'users',num:true,fmt:fmt.full},
+        {key:'newUsers',label:'New Users',tip:'newUsers',num:true,fmt:fmt.full},
+        {key:'sessions',label:'Sessions',tip:'sessions',num:true,fmt:fmt.full},
+      ]})}
+      <div class="grid grid-2 mt-16">
+        <div>${makeTable({id:'aud-lang',title:'Languages',tip:'language',data:data.byLanguage,defaultSort:'users',searchKeys:['language'],columns:[
+          {key:'language',label:'Language'},{key:'users',label:'Users',num:true,fmt:fmt.full},{key:'sessions',label:'Sessions',num:true,fmt:fmt.full},
+        ]})}</div>
+        <div>${makeTable({id:'aud-res',title:'Screen Resolutions',data:data.byResolution,defaultSort:'users',columns:[
+          {key:'resolution',label:'Resolution'},{key:'users',label:'Users',num:true,fmt:fmt.full},
+        ]})}</div>
+      </div>
+    `;
+    makeDoughnutChart('chart-aud-nvr',['New','Returning'],[s.newUsers,s.returningUsers],['#3b82f6','#10b981']);
+  } catch(e) { el.innerHTML = infoBox('audience')+`<div class="error">Failed to load audience: ${fmt.safe(e.message)}</div>`; }
+}
+
+async function renderCampaigns() {
+  const el = $('#view-campaigns');
+  el.innerHTML = infoBox('campaigns') + '<div class="loading">Loading campaigns…</div>';
+  try {
+    const data = await api(`/api/campaigns?${rangeParam()}`);
+    STATE.exports['campaigns'] = data.campaigns;
+    if (!data.campaigns.length) {
+      el.innerHTML = infoBox('campaigns') + `<div class="card"><div class="empty"><div style="font-size:32px;margin-bottom:12px;">📊</div><div>No campaign traffic detected in this period.</div><div style="margin-top:8px;font-size:12px;">Tag your links with UTM parameters (<code>utm_campaign</code>, <code>utm_source</code>, <code>utm_medium</code>) to track campaigns here.</div></div></div>`;
+      return;
+    }
+    const totalSessions = data.campaigns.reduce((s,c)=>s+c.sessions,0);
+    el.innerHTML = infoBox('campaigns') + `
+      <div class="grid grid-3 mb-16">
+        <div class="card"><div class="card-title">Campaigns Tracked</div><div class="kpi-sm">${data.campaigns.length}</div></div>
+        <div class="card"><div class="card-title">Total Sessions</div><div class="kpi-sm">${fmt.full(totalSessions)}</div></div>
+        <div class="card"><div class="card-title">Total Users</div><div class="kpi-sm">${fmt.full(data.campaigns.reduce((s,c)=>s+c.users,0))}</div></div>
+      </div>
+      ${makeTable({id:'campaigns-table',title:'Campaign Performance',data:data.campaigns,defaultSort:'sessions',exportName:'campaigns',searchKeys:['campaign','source','medium'],columns:[
+        {key:'campaign',label:'Campaign',tip:'campaign',render:r=>`<div><div class="title-text" style="max-width:260px;">${fmt.safe(r.campaign)}</div><div style="font-size:11px;color:var(--text-dim);margin-top:2px;">${fmt.safe(r.source)} / ${fmt.safe(r.medium)}</div></div>`},
+        {key:'sessions',label:'Sessions',tip:'sessions',num:true,fmt:fmt.full},
+        {key:'users',label:'Users',tip:'users',num:true,fmt:fmt.full},
+        {key:'engagedSessions',label:'Engaged',tip:'engagedSessions',num:true,fmt:fmt.full},
+        {key:'pageviews',label:'Pageviews',tip:'pageviews',num:true,fmt:fmt.full},
+        {key:'sessions',label:'% of Total',num:true,render:r=>`<span style="color:var(--text-dim);">${totalSessions>0?(r.sessions/totalSessions*100).toFixed(1)+'%':'—'}</span>`},
+      ]})}
+    `;
+  } catch(e) { el.innerHTML = infoBox('campaigns')+`<div class="error">Failed to load campaigns: ${fmt.safe(e.message)}</div>`; }
+}
+
+async function renderEvents() {
+  const el = $('#view-events');
+  el.innerHTML = infoBox('events') + '<div class="loading">Loading events…</div>';
+  try {
+    const data = await api(`/api/events?${rangeParam()}`);
+    STATE.exports['events'] = data.events;
+    const totalEvents = data.events.reduce((s,e)=>s+e.count,0);
+    el.innerHTML = infoBox('events') + `
+      <div class="grid grid-3 mb-16">
+        <div class="card"><div class="card-title">Unique Event Types</div><div class="kpi-sm">${data.events.length}</div></div>
+        <div class="card"><div class="card-title">Total Event Count</div><div class="kpi-sm">${fmt.num(totalEvents)}</div></div>
+        <div class="card"><div class="card-title">Top Event</div><div class="kpi-sm" style="font-size:14px;">${data.events[0]?.event||'—'}</div><div class="kpi-delta flat">${fmt.num(data.events[0]?.count||0)} times</div></div>
+      </div>
+      <div class="grid grid-2 mb-16">
+        <div class="card"><div class="card-header"><h3>Event Distribution</h3></div><div class="chart-box"><canvas id="chart-events-bar"></canvas></div></div>
+        <div class="card"><div class="card-header"><h3>Top Events</h3></div>${barList(data.events.slice(0,10),'event','count')}</div>
+      </div>
+      ${makeTable({id:'events-table',title:'All Events',data:data.events,defaultSort:'count',exportName:'events',searchKeys:['event'],columns:[
+        {key:'event',label:'Event Name',tip:'event',render:r=>`<span style="font-family:'JetBrains Mono',monospace;font-size:12px;">${fmt.safe(r.event)}</span>`},
+        {key:'count',label:'Event Count',num:true,fmt:fmt.full},
+        {key:'users',label:'Users',tip:'users',num:true,fmt:fmt.full},
+        {key:'countPerUser',label:'Per User',num:true,fmt:v=>(v||0).toFixed(2)},
+        {key:'count',label:'% of Total',num:true,render:r=>`<span style="color:var(--text-dim);">${totalEvents>0?(r.count/totalEvents*100).toFixed(1)+'%':'—'}</span>`},
+      ]})}
+    `;
+    const top10 = data.events.slice(0,10);
+    makeBarChart('chart-events-bar', top10.map(e=>e.event), [{label:'Count',data:top10.map(e=>e.count)}], true);
+  } catch(e) { el.innerHTML = infoBox('events')+`<div class="error">Failed to load events: ${fmt.safe(e.message)}</div>`; }
+}
+
+async function renderLandingPages() {
+  const el = $('#view-landing-pages');
+  el.innerHTML = infoBox('landing-pages') + '<div class="loading">Loading landing pages…</div>';
+  try {
+    const data = await api(`/api/landing-pages?${rangeParam()}`);
+    STATE.exports['landing-pages'] = data.pages;
+    const totalSessions = data.pages.reduce((s,p)=>s+p.sessions,0);
+    el.innerHTML = infoBox('landing-pages') + `
+      <div class="grid grid-3 mb-16">
+        <div class="card"><div class="card-title">Landing Pages</div><div class="kpi-sm">${data.pages.length}</div></div>
+        <div class="card"><div class="card-title">Total Sessions</div><div class="kpi-sm">${fmt.full(totalSessions)}</div></div>
+        <div class="card"><div class="card-title">Avg. Engagement Rate</div><div class="kpi-sm">${data.pages.length?(data.pages.reduce((s,p)=>s+p.engagementRate,0)/data.pages.length*100).toFixed(1)+'%':'—'}</div></div>
+      </div>
+      ${makeTable({id:'lp-table',title:'Landing Pages',data:data.pages,defaultSort:'sessions',exportName:'landing-pages',searchKeys:['path'],columns:[
+        {key:'path',label:'Page',tip:'landingPage',render:r=>`<div class="title-text">${fmt.safe(r.path)}</div>`},
+        {key:'sessions',label:'Sessions',tip:'sessions',num:true,fmt:fmt.full},
+        {key:'users',label:'Users',tip:'users',num:true,fmt:fmt.full},
+        {key:'newUsers',label:'New Users',tip:'newUsers',num:true,fmt:fmt.full},
+        {key:'engagementRate',label:'Eng. Rate',tip:'engagementRate',num:true,fmt:fmt.pct},
+        {key:'bounceRate',label:'Bounce',tip:'bounceRate',num:true,fmt:fmt.pct},
+      ]})}
+    `;
+  } catch(e) { el.innerHTML = infoBox('landing-pages')+`<div class="error">Failed to load landing pages: ${fmt.safe(e.message)}</div>`; }
+}
+
+async function renderAuthors() {
+  const el = $('#view-authors');
+  el.innerHTML = infoBox('authors') + '<div class="loading">Loading authors…</div>';
+  try {
+    const data = await api(`/api/authors?${rangeParam()}`);
+    STATE.exports['authors'] = data.authors;
+    const authorCards = data.authors.map(a => `
+      <div class="author-card">
+        ${a.avatar ? `<img class="author-avatar" src="${fmt.safe(a.avatar)}" alt="${fmt.safe(a.name)}" loading="lazy">` : `<div class="author-avatar-ph">${(a.name||'?')[0].toUpperCase()}</div>`}
+        <div class="author-name">${fmt.safe(a.name)}</div>
+        <div class="author-stat">${fmt.num(a.pageviews)}</div>
+        <div class="author-sub">${a.postCount} articles · ${fmt.num(a.users)} users</div>
+        <div class="author-sub">${(a.engagementRate*100).toFixed(0)}% eng. · ${fmt.dur(a.avgDuration)} avg time</div>
+        ${a.topArticle ? `<div style="font-size:11px;color:var(--text-dim);margin-top:4px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${fmt.safe(fmt.decode(a.topArticle.title))}">Top: ${fmt.safe(fmt.decode(a.topArticle.title))}</div>` : ''}
+      </div>
+    `).join('');
+
+    el.innerHTML = infoBox('authors') + `
+      <div class="author-grid mb-24">${authorCards||'<div class="empty">No author data</div>'}</div>
+      ${makeTable({id:'authors-table',title:'Author Performance',data:data.authors,defaultSort:'pageviews',exportName:'authors',searchKeys:['name'],columns:[
+        {key:'name',label:'Author',render:a=>`<div class="flex-row"><div>${a.avatar?`<img class="author-avatar" src="${fmt.safe(a.avatar)}" style="width:28px;height:28px;" loading="lazy">`:'<div class="author-avatar-ph" style="width:28px;height:28px;font-size:12px;">'+((a.name||'?')[0].toUpperCase())+'</div>'}</div><strong>${fmt.safe(a.name)}</strong></div>`},
+        {key:'postCount',label:'Articles',num:true,fmt:fmt.full},
+        {key:'pageviews',label:'Pageviews',tip:'pageviews',num:true,fmt:fmt.full},
+        {key:'users',label:'Users',tip:'users',num:true,fmt:fmt.full},
+        {key:'engagementRate',label:'Eng. Rate',tip:'engagementRate',num:true,fmt:fmt.pct},
+        {key:'avgDuration',label:'Avg. Time',tip:'avgDuration',num:true,fmt:fmt.dur},
+        {key:'topArticle',label:'Top Article',render:a=>a.topArticle?`<div class="title-text" style="max-width:240px;color:var(--text-muted);">${fmt.safe(fmt.decode(a.topArticle.title))}</div>`:'—'},
+      ]})}
+    `;
+  } catch(e) { el.innerHTML = infoBox('authors')+`<div class="error">Failed to load authors: ${fmt.safe(e.message)}</div>`; }
+}
+
+async function renderTags() {
+  const el = $('#view-tags');
+  el.innerHTML = infoBox('tags') + '<div class="loading">Loading tags…</div>';
+  try {
+    const data = await api(`/api/tags?${rangeParam()}`);
+    STATE.exports['tags'] = data.tags;
+    el.innerHTML = infoBox('tags') + `
+      <div class="grid grid-2 mb-16">
+        <div class="card"><div class="card-header"><h3>Top Tags by Pageviews</h3></div>${data.tags.length?barList(data.tags.slice(0,15),'tag','pageviews'):'<div class="empty-sm">No tag data</div>'}</div>
+        <div class="card"><div class="card-header"><h3>Top Tags by Articles</h3></div>${data.tags.length?barList(data.tags.slice(0).sort((a,b)=>b.articles-a.articles).slice(0,15),'tag','articles'):'<div class="empty-sm">No tag data</div>'}</div>
+      </div>
+      ${makeTable({id:'tags-table',title:'All Tags',data:data.tags,defaultSort:'pageviews',exportName:'tags',searchKeys:['tag'],columns:[
+        {key:'tag',label:'Tag'},
+        {key:'articles',label:'Articles',tip:'articles',num:true,fmt:fmt.full},
+        {key:'pageviews',label:'Pageviews',tip:'pageviews',num:true,fmt:fmt.full},
+        {key:'users',label:'Users',tip:'users',num:true,fmt:fmt.full},
+        {key:'pageviews',label:'PV / Article',num:true,render:r=>r.articles>0?`<span style="color:var(--text-muted);">${fmt.full(Math.round(r.pageviews/r.articles))}</span>`:'—'},
+      ]})}
+    `;
+  } catch(e) { el.innerHTML = infoBox('tags')+`<div class="error">Failed to load tags: ${fmt.safe(e.message)}</div>`; }
+}
+
+async function renderSearchTrends() {
+  const el = $('#view-search-trends');
+  el.innerHTML = infoBox('search-trends') + '<div class="loading">Loading search trends…</div>';
+  try {
+    const data = await api(`/api/search-trends?${rangeParam()}`);
+    const trends = data.trends || [];
+    const labels = trends.map(t=>fmt.date(t.date));
+    const totalClicks = trends.reduce((s,t)=>s+t.clicks,0);
+    const totalImpr = trends.reduce((s,t)=>s+t.impressions,0);
+    const avgPos = trends.length ? (trends.reduce((s,t)=>s+t.position,0)/trends.length).toFixed(1) : '—';
+
+    el.innerHTML = infoBox('search-trends') + `
+      <div class="grid grid-4 mb-16">
+        <div class="card"><div class="card-title">Total Clicks</div><div class="kpi-sm">${fmt.full(totalClicks)}</div></div>
+        <div class="card"><div class="card-title">Total Impressions</div><div class="kpi-sm">${fmt.num(totalImpr)}</div></div>
+        <div class="card"><div class="card-title">Avg. CTR</div><div class="kpi-sm">${totalImpr>0?(totalClicks/totalImpr*100).toFixed(2)+'%':'—'}</div></div>
+        <div class="card"><div class="card-title">Avg. Position</div><div class="kpi-sm">${avgPos}</div></div>
+      </div>
+      <div class="card mb-16">
+        <div class="card-header"><h3>Clicks Over Time</h3><span class="sub">Brand vs. Non-brand</span></div>
+        <div class="chart-box"><canvas id="chart-st-clicks"></canvas></div>
+      </div>
+      <div class="card mb-16">
+        <div class="card-header"><h3>Impressions Over Time</h3></div>
+        <div class="chart-box"><canvas id="chart-st-impr"></canvas></div>
+      </div>
+      <div class="card mb-16">
+        <div class="card-header"><h3>Average Position Over Time</h3><span class="sub">Lower = better</span></div>
+        <div class="chart-box"><canvas id="chart-st-pos"></canvas></div>
+      </div>
+    `;
+    makeLineChart('chart-st-clicks', labels, [
+      {label:'Total Clicks',data:trends.map(t=>t.clicks),fill:true},
+      {label:'Brand',data:trends.map(t=>t.brandClicks),color:'#8b5cf6'},
+      {label:'Non-Brand',data:trends.map(t=>t.nonBrandClicks),color:'#10b981'},
+    ]);
+    makeLineChart('chart-st-impr', labels, [{label:'Impressions',data:trends.map(t=>t.impressions),fill:true,color:'#3b82f6'}]);
+    makeLineChart('chart-st-pos', labels, [{label:'Avg. Position',data:trends.map(t=>t.position),color:'#f59e0b'}]);
+  } catch(e) { el.innerHTML = infoBox('search-trends')+`<div class="error">Failed to load search trends: ${fmt.safe(e.message)}</div>`; }
+}
+
+async function renderNewsSearch() {
+  const el = $('#view-news-search');
+  el.innerHTML = infoBox('news-search') + '<div class="loading">Loading News Search data…</div>';
+  try {
+    const data = await api(`/api/news-search?${rangeParam()}`);
+    const t = data.totals;
+    el.innerHTML = infoBox('news-search') + `
+      <div class="grid grid-4 mb-16">
+        <div class="card"><div class="card-title">News Impressions</div><div class="kpi-sm">${fmt.num(t.impressions)}</div></div>
+        <div class="card"><div class="card-title">News Clicks</div><div class="kpi-sm">${fmt.full(t.clicks)}</div></div>
+        <div class="card"><div class="card-title">Avg. CTR</div><div class="kpi-sm">${t.impressions>0?(t.clicks/t.impressions*100).toFixed(2)+'%':'—'}</div></div>
+        <div class="card"><div class="card-title">Avg. Position</div><div class="kpi-sm">${t.avgPosition?t.avgPosition.toFixed(1):'—'}</div></div>
+      </div>
+      <div class="section-title">Top Pages in Google News</div>
+      ${makeTable({id:'news-pages',title:'Pages',data:data.pages,defaultSort:'impressions',exportName:'news-pages',searchKeys:['path'],columns:[
+        {key:'path',label:'Page',render:r=>`<div class="title-text">${fmt.safe(r.path)}</div>`},
+        {key:'impressions',label:'Impressions',tip:'impressions',num:true,fmt:fmt.full},
+        {key:'clicks',label:'Clicks',tip:'clicks',num:true,fmt:fmt.full},
+        {key:'ctr',label:'CTR',tip:'ctr',num:true,fmt:fmt.pct},
+        {key:'position',label:'Position',tip:'position',num:true,render:r=>`<span class="${fmt.posClass(r.position)}">${fmt.pos(r.position)}</span>`},
+      ]})}
+      <div class="section-title mt-24">Top Queries in Google News</div>
+      ${makeTable({id:'news-queries',title:'Queries',data:data.queries,defaultSort:'impressions',exportName:'news-queries',searchKeys:['query'],columns:[
+        {key:'query',label:'Query',render:r=>`<div class="title-text" style="max-width:360px;">${fmt.safe(r.query)}</div>`},
+        {key:'impressions',label:'Impressions',tip:'impressions',num:true,fmt:fmt.full},
+        {key:'clicks',label:'Clicks',tip:'clicks',num:true,fmt:fmt.full},
+        {key:'ctr',label:'CTR',tip:'ctr',num:true,fmt:fmt.pct},
+        {key:'position',label:'Position',tip:'position',num:true,render:r=>`<span class="${fmt.posClass(r.position)}">${fmt.pos(r.position)}</span>`},
+      ]})}
+    `;
+  } catch(e) { el.innerHTML = infoBox('news-search')+`<div class="error">Failed to load News Search data: ${fmt.safe(e.message)}</div>`; }
+}
+
+async function renderSeoOpportunities() {
+  const el = $('#view-seo-opportunities');
+  el.innerHTML = infoBox('seo-opportunities') + '<div class="loading">Loading SEO opportunities…</div>';
+  try {
+    const data = await api(`/api/seo-opportunities?${rangeParam()}`);
+    const cols = [
+      {key:'path',label:'Page',render:r=>`<div class="title-text">${fmt.safe(r.path)}</div>`},
+      {key:'impressions',label:'Impressions',tip:'impressions',num:true,fmt:fmt.full},
+      {key:'clicks',label:'Clicks',tip:'clicks',num:true,fmt:fmt.full},
+      {key:'ctr',label:'CTR',tip:'ctr',num:true,fmt:fmt.pct},
+      {key:'position',label:'Position',tip:'position',num:true,render:r=>`<span class="${fmt.posClass(r.position)}">${fmt.pos(r.position)}</span>`},
+    ];
+    const qCols = [
+      {key:'query',label:'Query',render:r=>`<div class="title-text" style="max-width:360px;">${fmt.safe(r.query)}</div>`},
+      {key:'impressions',label:'Impressions',tip:'impressions',num:true,fmt:fmt.full},
+      {key:'clicks',label:'Clicks',tip:'clicks',num:true,fmt:fmt.full},
+      {key:'ctr',label:'CTR',tip:'ctr',num:true,fmt:fmt.pct},
+      {key:'position',label:'Position',tip:'position',num:true,render:r=>`<span class="${fmt.posClass(r.position)}">${fmt.pos(r.position)}</span>`},
+    ];
+
+    el.innerHTML = infoBox('seo-opportunities') + `
+      <div class="grid grid-4 mb-24">
+        <div class="card"><div class="card-title">Low CTR Pages</div><div class="kpi-sm">${data.counts.lowCtr}</div><div class="kpi-delta flat">100+ impressions, CTR &lt; 2%</div></div>
+        <div class="card"><div class="card-title">Near Page 1</div><div class="kpi-sm">${data.counts.nearPage1}</div><div class="kpi-delta flat">positions 8–15</div></div>
+        <div class="card"><div class="card-title">Quick Wins</div><div class="kpi-sm">${data.counts.quickWins}</div><div class="kpi-delta flat">positions 4–7, low CTR</div></div>
+        <div class="card"><div class="card-title">Query Opportunities</div><div class="kpi-sm">${data.counts.queryOpps}</div><div class="kpi-delta flat">non-brand, pos 6–20</div></div>
+      </div>
+
+      <div class="opp-section opp-red">
+        <div class="opp-section-header">🔴 Low CTR Pages — high impressions but almost no clicks</div>
+        <div style="padding:4px;">${data.lowCtr.length?makeTable({id:'opp-lowctr',title:'',data:data.lowCtr,defaultSort:'impressions',searchKeys:['path'],columns:cols}):'<div class="empty-sm">No low-CTR pages found</div>'}</div>
+      </div>
+
+      <div class="opp-section opp-amber">
+        <div class="opp-section-header">🟡 Near Page 1 — positions 8–15, one push away from top results</div>
+        <div style="padding:4px;">${data.nearPage1.length?makeTable({id:'opp-near1',title:'',data:data.nearPage1,defaultSort:'impressions',searchKeys:['path'],columns:cols}):'<div class="empty-sm">No pages in positions 8–15</div>'}</div>
+      </div>
+
+      <div class="opp-section opp-blue">
+        <div class="opp-section-header">🔵 Quick Wins — positions 4–7, low CTR despite top-5 ranking</div>
+        <div style="padding:4px;">${data.quickWins.length?makeTable({id:'opp-qw',title:'',data:data.quickWins,defaultSort:'impressions',searchKeys:['path'],columns:cols}):'<div class="empty-sm">No quick wins found</div>'}</div>
+      </div>
+
+      <div class="opp-section opp-green">
+        <div class="opp-section-header">🟢 Query Opportunities — non-brand queries, positions 6–20 with impressions</div>
+        <div style="padding:4px;">${data.queryOpportunities.length?makeTable({id:'opp-queries',title:'',data:data.queryOpportunities,defaultSort:'impressions',searchKeys:['query'],columns:qCols}):'<div class="empty-sm">No query opportunities found</div>'}</div>
+      </div>
+    `;
+  } catch(e) { el.innerHTML = infoBox('seo-opportunities')+`<div class="error">Failed to load SEO opportunities: ${fmt.safe(e.message)}</div>`; }
+}
+
+// ============================================================
+// Revenue Estimator (frontend-only, uses geo data + RPM tiers)
+// ============================================================
+const RPM_TIERS = {
+  tier1: { countries: ['United States','United Kingdom','Canada','Australia','New Zealand','Ireland'], rpm: 9, label: 'Tier 1 — Premium' },
+  tier2: { countries: ['Germany','France','Netherlands','Sweden','Norway','Denmark','Switzerland','Belgium','Austria','Italy','Spain','Japan','Singapore','Hong Kong','Finland','Portugal','Israel'], rpm: 3.5, label: 'Tier 2 — Mid' },
+};
+
+function classifyCountry(country) {
+  if (RPM_TIERS.tier1.countries.includes(country)) return 'tier1';
+  if (RPM_TIERS.tier2.countries.includes(country)) return 'tier2';
+  return 'tier3';
+}
+
+function estimateRevenue(pageviews, tier) {
+  const rpm = tier === 'tier1' ? RPM_TIERS.tier1.rpm : tier === 'tier2' ? RPM_TIERS.tier2.rpm : 0.80;
+  return (pageviews / 1000) * rpm;
+}
+
+async function renderRevenue() {
+  const el = $('#view-revenue');
+  el.innerHTML = '<div class="loading">Calculating revenue estimate…</div>';
+  try {
+    const [geo, overview] = await Promise.all([
+      api(`/api/geo?${rangeParam()}`),
+      api(`/api/overview?${rangeParam()}`),
+    ]);
+
+    const countries = geo.countries || [];
+    let t1pv=0, t2pv=0, t3pv=0, t1u=0, t2u=0, t3u=0;
+    const countryRevenue = countries.map(c => {
+      const tier = classifyCountry(c.country);
+      const rev = estimateRevenue(c.pageviews||0, tier);
+      if (tier==='tier1') { t1pv+=c.pageviews||0; t1u+=c.users||0; }
+      else if (tier==='tier2') { t2pv+=c.pageviews||0; t2u+=c.users||0; }
+      else { t3pv+=c.pageviews||0; t3u+=c.users||0; }
+      return { ...c, tier, estimatedRevenue: rev };
+    }).sort((a,b)=>b.estimatedRevenue-a.estimatedRevenue);
+
+    const totalRev = estimateRevenue(t1pv,'tier1') + estimateRevenue(t2pv,'tier2') + estimateRevenue(t3pv,'tier3');
+    const totalPV = overview.current?.pageviews || 0;
+    const effectiveRpm = totalPV > 0 ? (totalRev / totalPV * 1000) : 0;
+    const annualProjection = totalRev * (365 / ({today:1,yesterday:1,'7d':7,'28d':28,'30d':30,'90d':90}[STATE.range]||7));
+
+    const rpmBar = (label, pv, tier, color) => {
+      const rev = estimateRevenue(pv, tier);
+      const pct = totalPV > 0 ? (pv/totalPV*100).toFixed(1) : 0;
+      const rpm = tier==='tier1'?RPM_TIERS.tier1.rpm:tier==='tier2'?RPM_TIERS.tier2.rpm:0.80;
+      return `<div class="card card-compact">
+        <div class="card-title" style="color:${color};">${label}</div>
+        <div class="kpi-sm">$${rev.toFixed(2)}</div>
+        <div style="font-size:12px;color:var(--text-dim);margin-top:4px;">${fmt.num(pv)} pageviews (${pct}%) · $${rpm} RPM</div>
+        <div class="goal-progress mt-16"><div class="goal-progress-fill" style="width:${pct}%;background:${color};"></div></div>
+      </div>`;
+    };
+
+    el.innerHTML = `
+      <div class="info-box"><div class="info-box-icon">$</div><div style="flex:1;"><strong>Estimated ad revenue.</strong> Calculated using pageviews by country × typical display ad RPM for each tier. These are rough estimates — actual revenue depends on your ad network, fill rate, ad placement, and seasonality. Use for directional planning only.</div></div>
+      <div class="grid grid-4 mb-16">
+        <div class="card"><div class="card-title">Estimated Period Revenue</div><div class="kpi">$${totalRev.toFixed(2)}</div><div class="kpi-delta flat">for ${rangeLabel()}</div></div>
+        <div class="card"><div class="card-title">Annualized Projection</div><div class="kpi">$${annualProjection.toFixed(0)}</div><div class="kpi-delta flat">at current pace</div></div>
+        <div class="card"><div class="card-title">Effective RPM</div><div class="kpi">$${effectiveRpm.toFixed(2)}</div><div class="kpi-delta flat">blended rate per 1k pageviews</div></div>
+        <div class="card"><div class="card-title">Tier-1 Share</div><div class="kpi">${totalPV>0?(t1pv/totalPV*100).toFixed(1):0}%</div><div class="kpi-delta ${t1pv/Math.max(totalPV,1)>=0.5?'up':'down'}">${t1pv/Math.max(totalPV,1)>=0.5?'↑ Raptive-ready':'↓ Below 50% target'}</div></div>
+      </div>
+      <div class="grid grid-3 mb-16">
+        ${rpmBar('Tier 1 (US/UK/CA/AU/NZ/IE) — $9 RPM', t1pv, 'tier1', 'var(--green)')}
+        ${rpmBar('Tier 2 (EU/JP/SG) — $3.50 RPM', t2pv, 'tier2', 'var(--amber)')}
+        ${rpmBar('Tier 3 (Rest of World) — $0.80 RPM', t3pv, 'tier3', 'var(--accent)')}
+      </div>
+      <div class="card mb-16">
+        <div class="card-header"><h3>Revenue by Geography</h3><span class="sub">Estimate only — actual varies by network</span></div>
+        <div class="chart-box"><canvas id="chart-rev-geo"></canvas></div>
+      </div>
+      <div class="card mb-16">
+        <div class="card-header"><h3>RPM Benchmarks</h3><span class="sub">How to increase your effective RPM</span></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:4px;">
+          <div style="padding:12px;background:var(--bg-elev-2);border-radius:8px;font-size:13px;"><strong style="color:var(--green);">Raptive (AdThrive)</strong><br><span style="color:var(--text-dim);">Requires 100k+ pageviews/mo, 50%+ US traffic. RPM $12–25.</span></div>
+          <div style="padding:12px;background:var(--bg-elev-2);border-radius:8px;font-size:13px;"><strong style="color:var(--blue);">Mediavine</strong><br><span style="color:var(--text-dim);">Requires 50k+ sessions/mo. RPM $10–20.</span></div>
+          <div style="padding:12px;background:var(--bg-elev-2);border-radius:8px;font-size:13px;"><strong style="color:var(--amber);">Ezoic</strong><br><span style="color:var(--text-dim);">No minimum. RPM $5–12 depending on traffic quality.</span></div>
+          <div style="padding:12px;background:var(--bg-elev-2);border-radius:8px;font-size:13px;"><strong style="color:var(--purple);">Google AdSense</strong><br><span style="color:var(--text-dim);">No minimum. RPM $1–5. Best as a starting point.</span></div>
+        </div>
+      </div>
+      ${makeTable({id:'rev-table',title:'Revenue by Country',data:countryRevenue,defaultSort:'estimatedRevenue',exportName:'revenue',searchKeys:['country'],columns:[
+        {key:'country',label:'Country'},
+        {key:'tier',label:'Tier',render:r=>`<span class="status-pill ${r.tier==='tier1'?'status-evergreen':r.tier==='tier2'?'status-up':'status-flat'}">${r.tier}</span>`},
+        {key:'pageviews',label:'Pageviews',tip:'pageviews',num:true,fmt:fmt.full},
+        {key:'users',label:'Users',tip:'users',num:true,fmt:fmt.full},
+        {key:'estimatedRevenue',label:'Est. Revenue',num:true,fmt:v=>`$${v.toFixed(2)}`},
+      ]})}
+    `;
+
+    const top10 = countryRevenue.slice(0,10);
+    makeBarChart('chart-rev-geo', top10.map(c=>c.country), [
+      {label:'Est. Revenue ($)',data:top10.map(c=>parseFloat(c.estimatedRevenue.toFixed(2))),color:'var(--accent)'},
+    ]);
+  } catch(e) { el.innerHTML=`<div class="error">Failed to load revenue estimator: ${fmt.safe(e.message)}</div>`; }
+}
+
+// ============================================================
+// Article detail modal
+// ============================================================
+async function openArticleModal(article) {
+  const modal = $('#article-modal');
+  const body = $('#modal-body');
+  const title = $('#modal-title');
+  const cleanTitle = fmt.decode((article.title||article.path||'').replace(/<[^>]+>/g,''));
+  title.textContent = cleanTitle;
+  body.innerHTML = '<div class="loading">Loading article data…</div>';
+  modal.classList.add('active');
+  try {
+    const path = article.path || (()=>{try{return new URL(article.link).pathname;}catch{return article.link;}})();
+    const data = await api(`/api/article?path=${encodeURIComponent(path)}&range=28d`);
+    const tsLabels = data.timeseries.map(t=>fmt.date(fmt.dateKey(t.date)));
+    const totalPV = data.timeseries.reduce((s,t)=>s+t.pageviews,0);
+    const totalUsers = data.timeseries.reduce((s,t)=>s+t.users,0);
+    const gsc = data.gscTotals;
+    const note = STATE.notes[path] || '';
+
+    body.innerHTML = `
+      <div style="display:flex;gap:16px;margin-bottom:20px;flex-wrap:wrap;">
+        ${article.featuredImage?`<img src="${fmt.safe(article.featuredImage)}" style="width:180px;height:100px;object-fit:cover;border-radius:6px;">`:''}
+        <div style="flex:1;min-width:240px;">
+          ${article.categories?`<div style="margin-bottom:8px;">${article.categories.map(c=>`<span class="cat-badge ${fmt.catClass(c)}">${fmt.safe(c)}</span>`).join('')}</div>`:''}
+          <div style="color:var(--text-dim);font-size:12px;margin-bottom:10px;">${article.author?'By '+fmt.safe(article.author)+' · ':''}${article.date?fmt.dateTime(article.date):''}${article.daysOld!=null?' · '+article.daysOld+'d old':''}</div>
+          ${article.wordCount?`<div style="color:var(--text-dim);font-size:12px;margin-bottom:10px;">${fmt.full(article.wordCount)} words · ~${article.readingTime}min read · Content Score: <strong style="color:var(--accent);">${fmt.full(article.contentScore)}</strong></div>`:''}
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            ${article.link?`<a class="btn btn-sm" href="${fmt.safe(article.link)}" target="_blank">View Live ↗</a>`:''}
+            ${article.editLink?`<a class="btn btn-sm" href="${fmt.safe(article.editLink)}" target="_blank">Edit in WP ↗</a>`:''}
+            <button class="btn btn-sm" onclick="navigator.clipboard.writeText('${fmt.safe(article.link||'')}')">Copy URL</button>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-4 mb-16">
+        <div class="card card-compact"><div class="card-title">${tip('Pageviews (28d)','pageviews')}</div><div class="kpi-sm">${fmt.full(totalPV)}</div></div>
+        <div class="card card-compact"><div class="card-title">${tip('Users (28d)','users')}</div><div class="kpi-sm">${fmt.full(totalUsers)}</div></div>
+        <div class="card card-compact"><div class="card-title">${tip('GSC Clicks','clicks')}</div><div class="kpi-sm">${fmt.full(gsc?.clicks||0)}</div></div>
+        <div class="card card-compact"><div class="card-title">${tip('Avg. Position','position')}</div><div class="kpi-sm ${fmt.posClass(gsc?.position||0)}">${fmt.pos(gsc?.position||0)}</div></div>
+      </div>
+      <div class="card mb-16"><div class="card-header"><h3>Traffic (28 days)</h3></div><div class="chart-box"><canvas id="chart-article-ts"></canvas></div></div>
+      <div class="grid grid-2 mb-16">
+        <div class="card"><div class="card-header"><h3>Top Sources</h3></div>${data.sources.length?barList(data.sources.slice(0,10),'source','sessions'):'<div class="empty-sm">No data</div>'}</div>
+        <div class="card"><div class="card-header"><h3>Top Countries</h3></div>${data.countries.length?barList(data.countries.slice(0,10),'country','users'):'<div class="empty-sm">No data</div>'}</div>
+      </div>
+      <div class="card mb-16">
+        <div class="card-header"><h3>📝 Private Notes</h3><span class="sub">Saved in your browser only</span></div>
+        <textarea class="input" id="article-note" rows="3" placeholder="e.g., Updated headline 4/12, watch CTR…">${fmt.safe(note)}</textarea>
+        <div style="color:var(--text-dim);font-size:11px;margin-top:6px;">Notes save automatically</div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>Search Queries</h3><span class="sub">${data.queries.length} queries ranking for this page</span></div>
+        ${data.queries.length?`<div class="table-scroll"><table><thead><tr><th>Query</th><th class="num-head">${tip('Impr.','impressions')}</th><th class="num-head">${tip('Clicks','clicks')}</th><th class="num-head">${tip('CTR','ctr')}</th><th class="num-head">${tip('Pos.','position')}</th></tr></thead><tbody>${data.queries.slice(0,50).map(q=>`<tr><td>${fmt.safe(q.query)}</td><td class="num">${fmt.full(q.impressions)}</td><td class="num">${fmt.full(q.clicks)}</td><td class="num">${fmt.pct(q.ctr)}</td><td class="num ${fmt.posClass(q.position)}">${fmt.pos(q.position)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty-sm">No search data yet</div>'}
+      </div>
+    `;
+    makeLineChart('chart-article-ts', tsLabels, [
+      {label:'Pageviews',data:data.timeseries.map(t=>t.pageviews),fill:true},
+      {label:'Users',data:data.timeseries.map(t=>t.users),color:'#3b82f6'},
+    ]);
+    const noteEl = $('#article-note');
+    if (noteEl) {
+      let saveTimer;
+      noteEl.addEventListener('input', () => { clearTimeout(saveTimer); saveTimer=setTimeout(()=>{ STATE.notes[path]=noteEl.value; localStorage.setItem('tff_notes',JSON.stringify(STATE.notes)); },400); });
+    }
+  } catch(e) { body.innerHTML=`<div class="error">Failed to load article data: ${fmt.safe(e.message)}</div>`; }
+}
+
+// ============================================================
+// Settings modal
+// ============================================================
+function openSettings() {
+  const body = $('#settings-body');
+  body.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:20px;">
+      <div><div class="card-title">Theme</div><div class="chips"><div class="chip ${STATE.theme==='dark'?'active':''}" data-set-theme="dark">Dark</div><div class="chip ${STATE.theme==='light'?'active':''}" data-set-theme="light">Light</div></div></div>
+      <div><div class="card-title">Accent Color</div><div class="chips"><div class="chip ${STATE.accent==='red'?'active':''}" data-set-accent="red">Red</div><div class="chip ${STATE.accent==='blue'?'active':''}" data-set-accent="blue">Blue</div><div class="chip ${STATE.accent==='green'?'active':''}" data-set-accent="green">Green</div><div class="chip ${STATE.accent==='purple'?'active':''}" data-set-accent="purple">Purple</div><div class="chip ${STATE.accent==='amber'?'active':''}" data-set-accent="amber">Amber</div></div></div>
+      <div><div class="card-title">Table Density</div><div class="chips"><div class="chip ${STATE.density==='compact'?'active':''}" data-set-density="compact">Compact</div><div class="chip ${STATE.density==='normal'?'active':''}" data-set-density="normal">Normal</div><div class="chip ${STATE.density==='spacious'?'active':''}" data-set-density="spacious">Spacious</div></div></div>
+      <div><div class="card-title">Reset</div><div style="display:flex;gap:8px;flex-wrap:wrap;"><button class="btn btn-sm" id="reset-dismissed">Re-show all info boxes</button><button class="btn btn-sm" id="reset-notes">Clear all notes</button><button class="btn btn-sm" id="reset-cache">Clear cache</button></div></div>
+      <div style="color:var(--text-dim);font-size:11px;">Preferences saved locally. TFF Analytics v3.</div>
+    </div>
+  `;
+  $('#settings-modal').classList.add('active');
+  $$('[data-set-theme]').forEach(c=>c.addEventListener('click',()=>{setTheme(c.dataset.setTheme);openSettings();}));
+  $$('[data-set-accent]').forEach(c=>c.addEventListener('click',()=>{setAccent(c.dataset.setAccent);openSettings();renderView(STATE.view);}));
+  $$('[data-set-density]').forEach(c=>c.addEventListener('click',()=>{setDensity(c.dataset.setDensity);openSettings();}));
+  $('#reset-dismissed')?.addEventListener('click',()=>{STATE.dismissed={};localStorage.removeItem('tff_dismissed');renderView(STATE.view);closeModal('settings-modal');});
+  $('#reset-notes')?.addEventListener('click',()=>{if(confirm('Delete all article notes?')){STATE.notes={};localStorage.removeItem('tff_notes');closeModal('settings-modal');}});
+  $('#reset-cache')?.addEventListener('click',()=>{STATE.cache={};renderView(STATE.view);closeModal('settings-modal');});
+}
+
+// ============================================================
+// Command palette
+// ============================================================
+const NAV_LIST = [
+  {key:'overview',label:'Overview',group:'Views',shortcut:'1'},
+  {key:'realtime',label:'Realtime',group:'Views',shortcut:'2'},
+  {key:'articles',label:'Articles',group:'Views',shortcut:'3'},
+  {key:'movers',label:'Movers',group:'Views',shortcut:'4'},
+  {key:'insights',label:'Insights',group:'Views',shortcut:'5'},
+  {key:'contentops',label:'Content Ops',group:'Views',shortcut:'6'},
+  {key:'goals',label:'Goals',group:'Views',shortcut:'7'},
+  {key:'authors',label:'Authors',group:'Views'},
+  {key:'tags',label:'Tags',group:'Views'},
+  {key:'sources',label:'Traffic Sources',group:'Views'},
+  {key:'campaigns',label:'Campaigns',group:'Views'},
+  {key:'landing-pages',label:'Landing Pages',group:'Views'},
+  {key:'audience',label:'Audience',group:'Views'},
+  {key:'geo',label:'Geography',group:'Views'},
+  {key:'devices',label:'Devices',group:'Views'},
+  {key:'categories',label:'Categories',group:'Views'},
+  {key:'events',label:'Events',group:'Views'},
+  {key:'queries',label:'Search Queries',group:'Views'},
+  {key:'pages',label:'Search Pages',group:'Views'},
+  {key:'matrix',label:'Query × Page Matrix',group:'Views'},
+  {key:'search-trends',label:'Search Trends',group:'Views'},
+  {key:'news-search',label:'News Search',group:'Views'},
+  {key:'seo-opportunities',label:'SEO Opportunities',group:'Views'},
+  {key:'revenue',label:'Revenue Estimator',group:'Views'},
+];
+
+let cmdkSelected = 0;
+
+function openCmdk() { $('#cmdk').classList.add('active'); const inp=$('#cmdk-input'); inp.value=''; inp.focus(); cmdkSelected=0; updateCmdkList(''); }
+function closeCmdk() { $('#cmdk').classList.remove('active'); }
+
+function updateCmdkList(query) {
+  const q = query.toLowerCase().trim();
+  const list = $('#cmdk-list');
+  const results = [];
+  NAV_LIST.forEach(n => { if(!q||n.label.toLowerCase().includes(q)) results.push({type:'view',label:n.label,sub:n.shortcut?`Press ${n.shortcut}`:'View',action:()=>{renderView(n.key);closeCmdk();}}); });
+  if (q.length>=2 && STATE.allArticlesCache) {
+    STATE.allArticlesCache.forEach(a=>{ if(a.titleClean.toLowerCase().includes(q)) results.push({type:'article',label:a.titleClean,sub:a.catDisplay+' · '+fmt.date(a.date),action:()=>{openArticleModal(a);closeCmdk();}}); });
+  }
+  if (!results.length) { list.innerHTML='<div class="empty-sm">No matches</div>'; return; }
+  const groups = {};
+  results.forEach(r=>{ const g=r.type==='view'?'Views':'Articles'; if(!groups[g]) groups[g]=[]; groups[g].push(r); });
+  let html='', idx=0;
+  Object.entries(groups).forEach(([g,items])=>{ html+=`<div class="cmdk-group">${g}</div>`; items.forEach(r=>{ html+=`<div class="cmdk-item ${idx===cmdkSelected?'selected':''}" data-cmdk-idx="${idx}"><div class="cmdk-label">${fmt.safe(r.label)}</div><div class="cmdk-sub">${fmt.safe(r.sub)}</div></div>`; idx++; }); });
+  list.innerHTML=html; list._results=results;
+}
+
+$('#cmdk-input').addEventListener('input',e=>{cmdkSelected=0;updateCmdkList(e.target.value);});
+$('#cmdk-input').addEventListener('keydown',e=>{
+  const list=$('#cmdk-list'); const results=list._results||[];
+  if(e.key==='ArrowDown'){e.preventDefault();cmdkSelected=Math.min(cmdkSelected+1,results.length-1);updateCmdkList($('#cmdk-input').value);}
+  else if(e.key==='ArrowUp'){e.preventDefault();cmdkSelected=Math.max(cmdkSelected-1,0);updateCmdkList($('#cmdk-input').value);}
+  else if(e.key==='Enter'){e.preventDefault();if(results[cmdkSelected])results[cmdkSelected].action();}
+});
+$('#cmdk').addEventListener('click',e=>{ if(e.target.id==='cmdk') closeCmdk(); const item=e.target.closest('[data-cmdk-idx]'); if(item){const results=$('#cmdk-list')._results||[];const idx=parseInt(item.dataset.cmdkIdx);if(results[idx])results[idx].action();}});
+
+// ============================================================
+// Modals
+// ============================================================
+function closeModal(id) { $('#'+id).classList.remove('active'); }
+$$('.modal-backdrop').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)closeModal(m.id);}));
+
+// ============================================================
+// Router
+// ============================================================
+const renderers = {
+  overview:renderOverview, realtime:renderRealtime, articles:renderArticles, movers:renderMovers,
+  insights:renderInsights, contentops:renderContentOps, goals:renderGoals,
+  authors:renderAuthors, tags:renderTags,
+  sources:renderSources, campaigns:renderCampaigns, 'landing-pages':renderLandingPages,
+  audience:renderAudience, geo:renderGeo, devices:renderDevices, categories:renderCategories, events:renderEvents,
+  queries:renderQueries, pages:renderPages, matrix:renderMatrix,
+  'search-trends':renderSearchTrends, 'news-search':renderNewsSearch, 'seo-opportunities':renderSeoOpportunities,
+  revenue:renderRevenue,
+};
+
+const titles = {
+  overview:'Overview', realtime:'Realtime', articles:'Articles', movers:'Movers',
+  insights:'Insights', contentops:'Content Ops', goals:'Goals',
+  authors:'Authors', tags:'Tags',
+  sources:'Traffic Sources', campaigns:'Campaigns', 'landing-pages':'Landing Pages',
+  audience:'Audience', geo:'Geography', devices:'Devices', categories:'Categories', events:'Events',
+  queries:'Search Queries', pages:'Search Pages', matrix:'Query × Page Matrix',
+  'search-trends':'Search Trends', 'news-search':'News Search', 'seo-opportunities':'SEO Opportunities',
+  revenue:'Revenue Estimator',
+};
+
+function renderView(view) {
+  STATE.view = view;
+  $$('.view').forEach(v=>v.classList.remove('active'));
+  const viewEl = $('#view-'+view);
+  if (viewEl) viewEl.classList.add('active');
+  $$('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.view===view));
+  $('#topbar-title').textContent = titles[view] || view;
+  $('#topbar-sub').textContent = rangeLabel();
+  if (renderers[view]) renderers[view]();
+}
+
+// ============================================================
+// Event handlers
+// ============================================================
+$$('.nav-item').forEach(n=>n.addEventListener('click',()=>renderView(n.dataset.view)));
+
+$('#range-select').addEventListener('change', e => {
+  STATE.range = e.target.value;
+  localStorage.setItem('tff_range', STATE.range);
+  const cdw = $('#custom-date-wrap');
+  if (STATE.range === 'custom') {
+    cdw.classList.add('visible');
+  } else {
+    cdw.classList.remove('visible');
+    STATE.cache = {};
+    renderView(STATE.view);
+  }
+});
+$('#range-select').value = STATE.range;
+if (STATE.range === 'custom') {
+  $('#custom-date-wrap').classList.add('visible');
+  if (STATE.customStart) $('#custom-start').value = STATE.customStart;
+  if (STATE.customEnd) $('#custom-end').value = STATE.customEnd;
+}
+
+$('#custom-apply').addEventListener('click', () => {
+  const s = $('#custom-start').value;
+  const e = $('#custom-end').value;
+  if (!s || !e) { alert('Please select both start and end dates.'); return; }
+  if (s > e) { alert('Start date must be before end date.'); return; }
+  STATE.customStart = s; STATE.customEnd = e;
+  localStorage.setItem('tff_custom_start', s); localStorage.setItem('tff_custom_end', e);
+  STATE.cache = {};
+  renderView(STATE.view);
+});
+
+$('#compare-btn').addEventListener('click', () => {
+  STATE.compareMode = !STATE.compareMode;
+  $('#compare-btn').classList.toggle('active-state', STATE.compareMode);
+  renderView(STATE.view);
+});
+
+$('#refresh-btn').addEventListener('click', () => { STATE.cache={}; renderView(STATE.view); });
+$('#cmdk-btn').addEventListener('click', openCmdk);
+$('#settings-btn').addEventListener('click', openSettings);
+$('#help-btn').addEventListener('click', () => $('#help-modal').classList.add('active'));
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.target.matches('input,textarea,select')) return;
+  if ((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k') { e.preventDefault(); openCmdk(); return; }
+  if (e.key==='Escape') { closeCmdk(); $$('.modal-backdrop.active').forEach(m=>closeModal(m.id)); return; }
+  const shortcuts = {'1':'overview','2':'realtime','3':'articles','4':'movers','5':'insights','6':'contentops','7':'goals'};
+  if (shortcuts[e.key]) { renderView(shortcuts[e.key]); return; }
+  if (e.key==='r'||e.key==='R') { STATE.cache={}; renderView(STATE.view); return; }
+  if (e.key==='t'||e.key==='T') { setTheme(STATE.theme==='dark'?'light':'dark'); return; }
+  if (e.key==='?') { $('#help-modal').classList.add('active'); return; }
+  if (e.key===',') { openSettings(); return; }
+});
+
+// ============================================================
+// Floating tooltip — body-level, fixes overflow/sticky clipping
+// ============================================================
+const tipFloat = document.getElementById('tip-float');
+let tipHideTimer;
+
+document.addEventListener('mouseover', e => {
+  const icon = e.target.closest('.tip-icon');
+  if (!icon) return;
+  clearTimeout(tipHideTimer);
+  const pop = icon.parentElement?.querySelector('.tip-pop');
+  const text = pop ? pop.textContent.trim() : '';
+  if (!text) return;
+
+  tipFloat.textContent = text;
+  tipFloat.style.display = 'block';
+
+  const rect = icon.getBoundingClientRect();
+  const fw = tipFloat.offsetWidth;
+  const fh = tipFloat.offsetHeight;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+
+  let left = rect.left + rect.width/2 - fw/2;
+  let top = rect.top - fh - 10;
+
+  if (left < 8) left = 8;
+  if (left + fw > vw - 8) left = vw - fw - 8;
+  if (top < 8) top = rect.bottom + 10;
+  if (top + fh > vh - 8) top = rect.top - fh - 10;
+
+  tipFloat.style.left = left + 'px';
+  tipFloat.style.top = top + 'px';
+});
+
+document.addEventListener('mouseout', e => {
+  const icon = e.target.closest('.tip-icon');
+  if (!icon) return;
+  tipHideTimer = setTimeout(() => { tipFloat.style.display = 'none'; }, 80);
+});
+
+// ============================================================
+// Realtime auto-refresh + initial render
+// ============================================================
+setInterval(() => { if (STATE.view==='realtime') renderView('realtime'); }, 30000);
+
+// ============================================================
+// Auth — login screen + token management
+// ============================================================
+function showLogin(msg) {
+  $('#app-shell').style.display = 'none';
+  $('#login-overlay').style.display = 'flex';
+  $('#login-pass').value = '';
+  const err = $('#login-error');
+  if (msg) { err.textContent = msg; err.style.display = 'block'; }
+  else { err.style.display = 'none'; }
+  setTimeout(() => $('#login-pass').focus(), 50);
+}
+
+function showDashboard() {
+  $('#login-overlay').style.display = 'none';
+  $('#app-shell').style.display = 'flex';
+  renderView('overview');
+}
+
+async function checkAuth() {
+  if (!STATE.token) { showLogin(); return; }
+  // Verify stored token is still valid
+  try {
+    const res = await fetch(API_BASE + '/api/health', {
+      headers: { 'Authorization': 'Bearer ' + STATE.token }
+    });
+    if (res.ok || res.status === 404) { showDashboard(); return; } // 404 = no /health but worker is alive
+    if (res.status === 401) {
+      STATE.token = '';
+      sessionStorage.removeItem('tff_token');
+      localStorage.removeItem('tff_token_persist');
+      showLogin('Your session has expired. Please log in again.');
+    } else {
+      // Worker reachable but unexpected status — still let in (could be a non-critical error)
+      showDashboard();
+    }
+  } catch(e) {
+    // Network error / worker down — show login with notice
+    showLogin('Cannot reach the analytics worker. Check your connection.');
+  }
+}
+
+$('#login-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const pass = $('#login-pass').value.trim();
+  if (!pass) return;
+  const btn = $('#login-btn');
+  const err = $('#login-error');
+  btn.disabled = true;
+  btn.textContent = 'Checking…';
+  err.style.display = 'none';
+  try {
+    const res = await fetch(API_BASE + '/api/overview?range=7d', {
+      headers: { 'Authorization': 'Bearer ' + pass }
+    });
+    if (res.status === 401) {
+      err.textContent = 'Wrong password. Please try again.';
+      err.style.display = 'block';
+      $('#login-pass').focus();
+    } else if (!res.ok && res.status !== 200) {
+      // Worker returned something other than 401 — password was accepted
+      STATE.token = pass;
+      sessionStorage.setItem('tff_token', pass);
+      if ($('#login-remember').checked) localStorage.setItem('tff_token_persist', pass);
+      showDashboard();
+    } else {
+      STATE.token = pass;
+      sessionStorage.setItem('tff_token', pass);
+      if ($('#login-remember').checked) localStorage.setItem('tff_token_persist', pass);
+      showDashboard();
+    }
+  } catch(e) {
+    err.textContent = 'Network error — check your connection and try again.';
+    err.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Unlock Dashboard';
+  }
+});
+
+// Kick off
+checkAuth();
+</script>
+</body>
+</html>
