@@ -337,7 +337,120 @@ th.num-head { text-align: right; }
 ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 5px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
 
-@media (max-width: 1200px) { .grid-4,.grid-6 { grid-template-columns: repeat(2,1fr); } .grid-3 { grid-template-columns: repeat(2,1fr); } }
+/* ── v4 Upgrade: Dense command center, live feed, attribution, anomaly ── */
+.grid-5 { grid-template-columns: repeat(5,1fr); }
+.grid-tight { gap: 10px; }
+.mini-card { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; position: relative; }
+.mini-card .mc-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); font-weight: 600; margin-bottom: 6px; }
+.mini-card .mc-value { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; }
+.mini-card .mc-delta { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; margin-top: 4px; display: inline-flex; align-items: center; gap: 3px; }
+.mini-card .mc-spark { margin-top: 6px; display: block; }
+.mc-delta.up { color: var(--green); }
+.mc-delta.down { color: var(--accent); }
+.mc-delta.flat { color: var(--text-dim); }
+
+.kpi-strip { display: grid; grid-template-columns: repeat(10, 1fr); gap: 8px; }
+@media (max-width: 1400px) { .kpi-strip { grid-template-columns: repeat(5,1fr); } }
+@media (max-width: 900px) { .kpi-strip { grid-template-columns: repeat(2,1fr); } }
+
+.top5-grid { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 12px; }
+@media (max-width: 1400px) { .top5-grid { grid-template-columns: repeat(3,minmax(0,1fr)); } }
+@media (max-width: 900px) { .top5-grid { grid-template-columns: minmax(0,1fr); } }
+.top5-card { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 8px; padding: 14px; min-height: 180px; min-width: 0; overflow: hidden; }
+.top5-card h4 { font-size: 12px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+.top5-card h4 .mini-link { font-size: 10px; color: var(--accent); text-decoration: none; cursor: pointer; }
+.top5-list { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.top5-row { display: flex; align-items: center; gap: 8px; font-size: 12px; min-width: 0; }
+.top5-row .t5-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+.heat-grid { display: grid; grid-template-columns: repeat(24, 1fr); gap: 3px; }
+.heat-cell { aspect-ratio: 1/1.4; display:flex; align-items:center; justify-content:center; font-size:10px; font-family:'JetBrains Mono', monospace; color: var(--text); border-radius: 4px; min-height: 24px; cursor: default; }
+.heat-cell:hover { outline: 2px solid var(--accent); }
+.top5-row .t5-val { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--text-muted); flex-shrink: 0; }
+.top5-row .t5-rank { width: 16px; height: 16px; border-radius: 50%; background: var(--bg-elev-2); color: var(--text-dim); font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+/* ── Live hits ticker ── */
+.live-ticker { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.live-ticker-head { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.live-ticker-feed { max-height: 560px; overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+.live-hit-row { display: grid; grid-template-columns: 80px 1fr 120px 60px 100px; gap: 10px; padding: 8px 16px; border-bottom: 1px solid var(--border); align-items: center; animation: hitIn 0.3s ease; }
+@keyframes hitIn { from { background: var(--accent-glow); transform: translateX(-4px); } to { background: transparent; transform: none; } }
+.live-hit-row:hover { background: var(--bg-hover); }
+.live-hit-time { color: var(--text-dim); font-size: 11px; }
+.live-hit-page { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.live-hit-src { color: var(--accent); font-size: 11px; }
+.live-hit-cc { color: var(--text-muted); font-size: 11px; font-weight: 600; }
+.live-hit-dev { color: var(--text-dim); font-size: 11px; }
+
+.live-paused-badge { display: inline-flex; align-items: center; gap: 4px; background: var(--amber-glow); color: var(--amber); padding: 3px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+
+/* ── Intelligence strip ── */
+.intel-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+@media (max-width: 1200px) { .intel-strip { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 700px) { .intel-strip { grid-template-columns: 1fr; } }
+.intel-card { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 8px; padding: 14px; border-top: 2px solid; }
+.intel-card.intel-crit { border-top-color: var(--accent); }
+.intel-card.intel-warn { border-top-color: var(--amber); }
+.intel-card.intel-good { border-top-color: var(--green); }
+.intel-card.intel-info { border-top-color: var(--blue); }
+.intel-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; color: var(--text-dim); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.intel-item { padding: 6px 0; font-size: 12px; color: var(--text); border-bottom: 1px dashed var(--border); }
+.intel-item:last-child { border-bottom: none; }
+.intel-item .intel-sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+/* ── Anomaly badges ── */
+.anom-badge { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; letter-spacing: 0.04em; text-transform: uppercase; }
+.anom-badge.crit { background: var(--accent-glow); color: #f87171; }
+.anom-badge.warn { background: var(--amber-glow); color: #fbbf24; }
+.anom-badge.info { background: var(--blue-glow); color: #60a5fa; }
+.anom-badge.good { background: var(--green-glow); color: #34d399; }
+
+/* ── Attribution chips on article rows ── */
+.attr-chip { display: inline-flex; align-items: center; gap: 3px; padding: 1px 6px; border-radius: 8px; font-size: 10px; font-weight: 500; background: var(--bg-elev-2); color: var(--text-muted); margin-right: 4px; }
+.attr-chip.src-organic { background: rgba(16,185,129,0.12); color: #34d399; }
+.attr-chip.src-social { background: rgba(59,130,246,0.12); color: #60a5fa; }
+.attr-chip.src-direct { background: rgba(139,92,246,0.12); color: #a78bfa; }
+.attr-chip.src-referral { background: rgba(245,158,11,0.12); color: #fbbf24; }
+
+.dev-bar { display: inline-flex; width: 60px; height: 6px; border-radius: 3px; overflow: hidden; background: var(--bg-elev-2); vertical-align: middle; }
+.dev-bar-seg { height: 100%; }
+.dev-bar-desktop { background: var(--blue); }
+.dev-bar-mobile { background: var(--accent); }
+.dev-bar-tablet { background: var(--amber); }
+
+/* ── Sankey (page flow) ── */
+.sankey-wrap { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 10px; padding: 20px; min-height: 420px; }
+.sankey-svg { width: 100%; height: 400px; }
+.sankey-node rect { fill: var(--accent-glow); stroke: var(--accent); stroke-width: 1; }
+.sankey-node text { fill: var(--text); font-size: 11px; font-family: 'DM Sans', sans-serif; }
+.sankey-link { fill: none; stroke: var(--accent); stroke-opacity: 0.25; }
+.sankey-link:hover { stroke-opacity: 0.55; }
+
+/* ── Digest / printable ── */
+.digest-page { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 12px; padding: 32px; max-width: 880px; margin: 0 auto; }
+.digest-head { border-bottom: 2px solid var(--accent); padding-bottom: 16px; margin-bottom: 24px; }
+.digest-head h2 { font-size: 24px; font-family: 'Poppins', sans-serif; font-weight: 800; }
+.digest-head .digest-date { color: var(--text-dim); font-size: 13px; margin-top: 4px; }
+.digest-section { margin-bottom: 24px; }
+.digest-section h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); margin-bottom: 10px; font-weight: 700; }
+
+@media print {
+  body { background: white; color: black; }
+  .sidebar, .topbar, .info-box, .btn, #tip-float { display: none !important; }
+  .main { margin-left: 0; }
+  .content { padding: 0; max-width: 100%; }
+  .digest-page { box-shadow: none; border: none; padding: 0; }
+}
+
+/* ── Loading skeletons ── */
+.skel { background: linear-gradient(90deg, var(--bg-elev-2) 0%, var(--bg-hover) 50%, var(--bg-elev-2) 100%); background-size: 200% 100%; animation: skelShimmer 1.2s ease-in-out infinite; border-radius: 4px; }
+@keyframes skelShimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* ── Alert rule editor ── */
+.alert-rule { background: var(--bg-elev-2); border: 1px solid var(--border); border-radius: 8px; padding: 14px; display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; margin-bottom: 8px; }
+.alert-rule .ar-title { font-weight: 600; font-size: 13px; }
+.alert-rule .ar-sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+@media (max-width: 1200px) { .grid-4,.grid-6,.grid-5 { grid-template-columns: repeat(2,1fr); } .grid-3 { grid-template-columns: repeat(2,1fr); } }
 @media (max-width: 900px) {
   .sidebar { width: 64px; }
   .sidebar .brand-text, .sidebar .nav-label, .sidebar .nav-item span:not(.dot), .nav-item .kbd { display: none; }
@@ -379,13 +492,17 @@ th.num-head { text-align: right; }
       <div class="nav-label">General</div>
       <div class="nav-item active" data-view="overview"><span class="dot"></span><span>Overview</span><span class="kbd">1</span></div>
       <div class="nav-item" data-view="realtime"><span class="dot"></span><span>Realtime</span><span class="kbd">2</span></div>
+      <div class="nav-item" data-view="live-hits"><span class="dot"></span><span>Live Hits</span><span class="kbd">L</span></div>
       <div class="nav-item" data-view="articles"><span class="dot"></span><span>Articles</span><span class="kbd">3</span></div>
       <div class="nav-item" data-view="movers"><span class="dot"></span><span>Movers</span><span class="kbd">4</span></div>
+      <div class="nav-item" data-view="daily-digest"><span class="dot"></span><span>Daily Digest</span><span class="kbd">D</span></div>
     </div>
     <div class="nav-section">
       <div class="nav-label">Analysis</div>
       <div class="nav-item" data-view="insights"><span class="dot"></span><span>Insights</span><span class="kbd">5</span></div>
+      <div class="nav-item" data-view="anomalies"><span class="dot"></span><span>Anomalies & Alerts</span><span class="kbd">A</span></div>
       <div class="nav-item" data-view="contentops"><span class="dot"></span><span>Content Ops</span><span class="kbd">6</span></div>
+      <div class="nav-item" data-view="content-roi"><span class="dot"></span><span>Content ROI</span></div>
       <div class="nav-item" data-view="goals"><span class="dot"></span><span>Goals</span><span class="kbd">7</span></div>
       <div class="nav-item" data-view="authors"><span class="dot"></span><span>Authors</span></div>
       <div class="nav-item" data-view="tags"><span class="dot"></span><span>Tags</span></div>
@@ -393,6 +510,9 @@ th.num-head { text-align: right; }
     <div class="nav-section">
       <div class="nav-label">Traffic</div>
       <div class="nav-item" data-view="sources"><span class="dot"></span><span>Sources</span></div>
+      <div class="nav-item" data-view="referrers"><span class="dot"></span><span>Referrers</span></div>
+      <div class="nav-item" data-view="page-attribution"><span class="dot"></span><span>Page Attribution</span></div>
+      <div class="nav-item" data-view="page-flow"><span class="dot"></span><span>Page Flow</span></div>
       <div class="nav-item" data-view="campaigns"><span class="dot"></span><span>Campaigns</span></div>
       <div class="nav-item" data-view="landing-pages"><span class="dot"></span><span>Landing Pages</span></div>
     </div>
@@ -407,6 +527,7 @@ th.num-head { text-align: right; }
     <div class="nav-section">
       <div class="nav-label">Search Console</div>
       <div class="nav-item" data-view="queries"><span class="dot"></span><span>Queries</span></div>
+      <div class="nav-item" data-view="query-intelligence"><span class="dot"></span><span>Query Intelligence</span></div>
       <div class="nav-item" data-view="pages"><span class="dot"></span><span>Pages</span></div>
       <div class="nav-item" data-view="matrix"><span class="dot"></span><span>Query × Page</span></div>
       <div class="nav-item" data-view="search-trends"><span class="dot"></span><span>Search Trends</span></div>
@@ -416,6 +537,7 @@ th.num-head { text-align: right; }
     <div class="nav-section">
       <div class="nav-label">Monetization</div>
       <div class="nav-item" data-view="revenue"><span class="dot"></span><span>Revenue Estimator</span></div>
+      <div class="nav-item" data-view="revenue-deep"><span class="dot"></span><span>Revenue Deep Dive</span></div>
     </div>
   </aside>
 
@@ -476,6 +598,15 @@ th.num-head { text-align: right; }
       <section class="view" id="view-news-search"></section>
       <section class="view" id="view-seo-opportunities"></section>
       <section class="view" id="view-revenue"></section>
+      <section class="view" id="view-live-hits"></section>
+      <section class="view" id="view-daily-digest"></section>
+      <section class="view" id="view-anomalies"></section>
+      <section class="view" id="view-content-roi"></section>
+      <section class="view" id="view-referrers"></section>
+      <section class="view" id="view-page-attribution"></section>
+      <section class="view" id="view-page-flow"></section>
+      <section class="view" id="view-query-intelligence"></section>
+      <section class="view" id="view-revenue-deep"></section>
     </div>
   </main>
 </div>
@@ -607,6 +738,15 @@ const VIEW_INFO = {
   'search-trends': { title: "What this shows", body: "Daily Search Console performance over time. Track brand vs. non-brand click trends and spot algorithm impact dates." },
   'news-search': { title: "What this shows", body: "Search Console data filtered to <strong>Google News</strong> surfaces only. Shows which articles and queries are getting News carousel impressions." },
   'seo-opportunities': { title: "What this shows", body: "Actionable SEO tasks: pages with low CTR despite impressions, pages near page 1, quick wins in positions 4–7, and query opportunities." },
+  'live-hits': { title: "What this shows", body: "A <strong>live stream of individual pageviews</strong> as they happen — each row is one visit with page, source, country, and device. Answers \"who's reading what right now, and how did they get here.\" Auto-refreshes every 5s; pause to read." },
+  'daily-digest': { title: "What this shows", body: "Your <strong>CEO morning brief</strong>. Yesterday at a glance: traffic, revenue, biggest winners and losers, breakout articles, urgent SEO alerts, and pace vs monthly goal. Print or export as PDF for the team." },
+  'anomalies': { title: "What this shows", body: "Server-detected <strong>spikes, drops, ranking losses, and breakouts</strong>. Define your own alert rules (e.g., ping me if an article loses 40% of traffic) and route alerts to webhooks or email." },
+  'content-roi': { title: "What this shows", body: "For each article: word count, hours invested, est revenue, revenue per day alive, evergreen score, and ROI. Use this to decide <strong>what kinds of articles to commission more of</strong>." },
+  'referrers': { title: "What this shows", body: "Full drilldown of <strong>every referring domain and path</strong> — which external sites drive traffic, what they drive it to, and how well those visitors engage. Expand a row to see which articles each referrer drove." },
+  'page-attribution': { title: "What this shows", body: "Pick any article to see its <strong>complete source breakdown</strong>: channels, referrers, UTM campaigns, countries, devices, ranking queries, scroll depth, and revenue — the missing per-article attribution view." },
+  'page-flow': { title: "What this shows", body: "<strong>Where readers go after the landing page</strong>. Sankey diagram of landing → next → next. Filter by source to answer \"where do Facebook readers go next?\" and find internal-link opportunities." },
+  'query-intelligence': { title: "What this shows", body: "Branded vs non-branded split, <strong>query clustering</strong>, position-delta tracking, SERP-feature hints, and top gainers/losers. Goes far deeper than the raw Queries table." },
+  'revenue-deep': { title: "What this shows", body: "<strong>Revenue per article</strong>, by source, by country heatmap, RPM benchmark comparison, month-to-date vs target with forecast. The full monetization picture." },
 };
 
 // ============================================================
@@ -626,6 +766,12 @@ const STATE = {
   notes: JSON.parse(localStorage.getItem('tff_notes') || '{}'),
   goals: JSON.parse(localStorage.getItem('tff_goals') || '{}'),
   tsMetrics: JSON.parse(localStorage.getItem('tff_ts_metrics') || '["pageviews","users"]'),
+  brandTerms: JSON.parse(localStorage.getItem('tff_brand_terms') || '["front feed","thefrontfeed","tff"]'),
+  rpmOverride: JSON.parse(localStorage.getItem('tff_rpm_override') || 'null'),
+  hoursPerArticle: parseFloat(localStorage.getItem('tff_hours_per_article') || '2'),
+  hourlyRate: parseFloat(localStorage.getItem('tff_hourly_rate') || '30'),
+  liveHitsPaused: false,
+  liveHitsBuffer: [],
   cache: {},
   charts: {},
   sort: {},
@@ -705,6 +851,67 @@ async function api(path, opts = {}) {
   if (data.error) throw new Error(data.error);
   STATE.cache[key] = { time: now, data };
   return data;
+}
+
+// Safe variant — returns null on failure (for endpoints not yet live in worker)
+async function apiSafe(path, opts = {}) {
+  try { return await api(path, opts); } catch(e) { return null; }
+}
+
+// ============================================================
+// Source / channel helpers
+// ============================================================
+function sourceClass(s) {
+  const x = (s||'').toLowerCase();
+  if (x.includes('organic') || x.includes('google') || x.includes('bing')) return 'src-organic';
+  if (x.includes('social') || x.includes('facebook') || x.includes('twitter') || x.includes('instagram') || x.includes('x.com') || x.includes('reddit') || x.includes('tiktok')) return 'src-social';
+  if (x.includes('direct') || x === '(direct) / (none)' || x === '(none)') return 'src-direct';
+  if (x.includes('referral') || x.includes('.com') || x.includes('.net')) return 'src-referral';
+  return '';
+}
+
+function deviceIcon(d) {
+  const x = (d||'').toLowerCase();
+  if (x.includes('mobile')) return '📱';
+  if (x.includes('tablet')) return '📲';
+  return '💻';
+}
+
+function countryFlag(code) {
+  if (!code || code.length !== 2) return '🌍';
+  try { return String.fromCodePoint(...[...code.toUpperCase()].map(c => 0x1F1A5 + c.charCodeAt(0))); } catch { return '🌍'; }
+}
+
+function isBrandQuery(q) {
+  const qq = (q||'').toLowerCase();
+  return STATE.brandTerms.some(t => t && qq.includes(t.toLowerCase()));
+}
+
+// Small sparkline that accepts a values array and returns an SVG
+function miniSpark(values, color, w=80, h=22) {
+  if (!values || !values.length) return '';
+  const pad=2, max=Math.max(...values,1), min=Math.min(...values,0), range=max-min||1;
+  const step=(w-pad*2)/Math.max(values.length-1,1);
+  const points=values.map((v,i)=>`${pad+i*step},${h-pad-((v-min)/range)*(h-pad*2)}`).join(' ');
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="width:100%;height:${h}px;display:block;"><polyline fill="none" stroke="${color||'var(--accent)'}" stroke-width="1.5" points="${points}"/></svg>`;
+}
+
+// Compact top-5 card
+function top5Card(title, items, labelKey, valKey, linkView, valFmt) {
+  const fmtr = valFmt || fmt.num;
+  const rows = (items||[]).slice(0,5).map((it,i) =>
+    `<div class="top5-row"><span class="t5-rank">${i+1}</span><span class="t5-label" title="${fmt.safe(it[labelKey]||'')}">${fmt.safe(it[labelKey]||'—')}</span><span class="t5-val">${fmtr(it[valKey]||0)}</span></div>`
+  ).join('');
+  const link = linkView ? `<a class="mini-link" data-goto="${linkView}">View all →</a>` : '';
+  return `<div class="top5-card"><h4>${fmt.safe(title)}${link}</h4><div class="top5-list">${rows || '<div class="empty-sm" style="padding:8px;">No data</div>'}</div></div>`;
+}
+
+// Device bar segment
+function devBar(split) {
+  if (!split) return '';
+  const d = split.desktop||0, m = split.mobile||0, t = split.tablet||0;
+  const sum = d+m+t || 1;
+  return `<span class="dev-bar"><span class="dev-bar-seg dev-bar-desktop" style="width:${d/sum*100}%"></span><span class="dev-bar-seg dev-bar-mobile" style="width:${m/sum*100}%"></span><span class="dev-bar-seg dev-bar-tablet" style="width:${t/sum*100}%"></span></span>`;
 }
 
 // ============================================================
@@ -894,78 +1101,315 @@ function makeBarChart(canvasId, labels, datasets, horizontal) {
 
 async function renderOverview() {
   const el = $('#view-overview');
-  el.innerHTML = infoBox('overview') + '<div class="loading">Loading overview…</div>';
+  el.innerHTML = infoBox('overview') + '<div class="loading">Loading command center…</div>';
   try {
-    const [overview, series, pulse, movers, categories, sources, geo] = await Promise.all([
+    const [overview, series, pulse, movers, categories, sources, geo, queries, pagesData, realtime, anomalies, articleRev, gscSummary, authors, landingPages, devices, hourly, articlesAll] = await Promise.all([
       api(`/api/overview?${rangeParam()}`),
       api(`/api/timeseries?${rangeParam()}`),
       api('/api/pulse', {ttl:60000}),
       api(`/api/movers?${rangeParam()}`),
       api(`/api/categories?${rangeParam()}`),
-      api(`/api/sources?${rangeParam()}`).catch(()=>null),
-      api(`/api/geo?${rangeParam()}`).catch(()=>null),
+      apiSafe(`/api/sources?${rangeParam()}`),
+      apiSafe(`/api/geo?${rangeParam()}`),
+      apiSafe(`/api/queries?${rangeParam()}&limit=20`),
+      apiSafe(`/api/pages?${rangeParam()}&limit=5`),
+      apiSafe('/api/realtime', {ttl:30000}),
+      apiSafe(`/api/anomalies?${rangeParam()}`),
+      apiSafe(`/api/article-revenue?${rangeParam()}&top=1`),
+      apiSafe(`/api/search-summary?${rangeParam()}`),
+      apiSafe(`/api/authors?${rangeParam()}`),
+      apiSafe(`/api/landing-pages?${rangeParam()}&limit=5`),
+      apiSafe(`/api/devices?${rangeParam()}`),
+      apiSafe(`/api/hourly?${rangeParam()}`),
+      apiSafe(`/api/articles?${rangeParam()}&limit=30`),
     ]);
-    const c = overview.current, p = overview.previous;
-    const kpi = (label, key, cur, prev, formatter=fmt.full) => {
-      const d = fmt.delta(cur, prev);
-      return `<div class="card"><div class="card-title">${tip(label,key)}</div><div class="kpi">${formatter(cur)}</div><div class="kpi-delta ${d.dir}">${d.sym} ${d.pct.toFixed(1)}% <span class="kpi-delta-sub">vs ${formatter(prev)}</span></div></div>`;
+    const c = overview.current || {}, p = overview.previous || {};
+
+    // Revenue estimate (fallback math using geo + RPM)
+    const rpm = STATE.rpmOverride || {tier1:9, tier2:3.5, tier3:0.8};
+    const t1List = ['United States','United Kingdom','Canada','Australia','New Zealand','Ireland'];
+    const t2List = ['Germany','France','Netherlands','Sweden','Norway','Denmark','Japan','Singapore','Switzerland','Austria','Belgium','Finland'];
+    const t1pv = (geo?.countries||[]).filter(g => t1List.includes(g.country)).reduce((s,g)=>s+(g.pageviews||0),0);
+    const t2pv = (geo?.countries||[]).filter(g => t2List.includes(g.country)).reduce((s,g)=>s+(g.pageviews||0),0);
+    const t3pv = Math.max((c.pageviews||0) - t1pv - t2pv, 0);
+    const estRev = articleRev?.data?.totals?.estRevenue ?? ((t1pv/1000*rpm.tier1) + (t2pv/1000*rpm.tier2) + (t3pv/1000*rpm.tier3));
+    const t1Share = (c.pageviews||1) > 0 ? t1pv/(c.pageviews||1) : 0;
+    const blendedRpm = (c.pageviews||0) > 0 ? (estRev / (c.pageviews/1000)) : 0;
+
+    // Goal pace
+    const goalKey = `${STATE.range}_pageviews`;
+    const goalTarget = STATE.goals[goalKey] || 0;
+    const goalPacePct = goalTarget ? (c.pageviews||0)/goalTarget*100 : 0;
+
+    // Sparkline series (latest 14 buckets from timeseries)
+    const sparkPv = (series.series||[]).slice(-14).map(s=>s.pageviews||0);
+    const sparkUsers = (series.series||[]).slice(-14).map(s=>s.users||0);
+    const sparkSessions = (series.series||[]).slice(-14).map(s=>s.sessions||0);
+    const sparkNew = (series.series||[]).slice(-14).map(s=>s.newUsers||0);
+    const sparkEng = (series.series||[]).slice(-14).map(s=>s.engagedSessions||0);
+
+    const miniKpi = (label, cur, prev, spark, sparkColor, fmtr=fmt.full) => {
+      const d = fmt.delta(cur||0, prev||0);
+      return `<div class="mini-card">
+        <div class="mc-label">${fmt.safe(label)}</div>
+        <div class="mc-value">${fmtr(cur||0)}</div>
+        <div class="mc-delta ${d.dir}">${d.sym} ${d.pct.toFixed(1)}%</div>
+        ${spark ? `<div class="mc-spark">${miniSpark(spark, sparkColor||'var(--accent)')}</div>` : ''}
+      </div>`;
     };
 
-    const metricColors = {pageviews:'var(--accent)',users:'#3b82f6',sessions:'#10b981',engagedSessions:'#8b5cf6',newUsers:'#f59e0b'};
+    const activeUsersNow = realtime?.activeUsers ?? (pulse?.pulse?.[0]?.activeUsers||0);
+
+    // Breakout: article from movers.rising with largest % gain and high baseline-to-current ratio
+    const breakout = (movers?.rising||[]).filter(m => m.previous >= 5 && m.current >= m.previous*3).sort((a,b)=>b.current-a.current)[0];
+
+    // Build channels / sources / queries / pages / countries / referrers top 5 lists
+    const topChannels = sources?.byChannel ? sources.byChannel.slice(0,5).map(s=>({name:s.channel, value:s.sessions||s.pageviews||0})) : [];
+    const topSources = sources?.sources ? sources.sources.slice(0,5).map(s=>({name:s.source, value:s.sessions||s.pageviews||0})) : topChannels;
+    const topPages = pagesData?.pages ? pagesData.pages.slice(0,5).map(p=>({name:p.path||p.url, value:p.clicks||p.impressions||0})) : [];
+    const topQueries = queries?.queries ? queries.queries.slice(0,5).map(q=>({name:q.query, value:q.clicks||q.impressions||0})) : [];
+    const topCountries = geo?.countries ? geo.countries.slice(0,5).map(g=>({name:g.country, value:g.pageviews||0})) : [];
+    const topReferrers = overview.topReferrers || realtime?.topReferrers || [];
+
+    // Metric toggles for trend chart
     const metricLabels = {pageviews:'Pageviews',users:'Users',sessions:'Sessions',engagedSessions:'Engaged Sessions',newUsers:'New Users'};
     const togglesHtml = ['pageviews','users','sessions','engagedSessions','newUsers'].map(m =>
       `<div class="mtoggle mtoggle-${m.replace('engagedSessions','engaged').replace('newUsers','new')} ${STATE.tsMetrics.includes(m)?'on':''}" data-metric="${m}">${metricLabels[m]}</div>`
     ).join('');
 
+    // Anomaly feed items
+    const anomList = (anomalies?.anomalies || []).slice(0,5);
+    const risingList = (movers.rising||[]).slice(0,4);
+    const fallingList = (movers.falling||[]).slice(0,4);
+
     el.innerHTML = infoBox('overview') + `
-      <div class="grid grid-4">
-        ${kpi('Pageviews','pageviews',c.pageviews,p.pageviews)}
-        ${kpi('Users','users',c.users,p.users)}
-        ${kpi('Sessions','sessions',c.sessions,p.sessions)}
-        ${kpi('Engaged Sessions','engagedSessions',c.engagedSessions,p.engagedSessions)}
+      <!-- Row 1: 10-KPI strip with sparklines -->
+      <div class="kpi-strip">
+        ${miniKpi('Pageviews', c.pageviews, p.pageviews, sparkPv, 'var(--accent)')}
+        ${miniKpi('Users', c.users, p.users, sparkUsers, '#3b82f6')}
+        ${miniKpi('Sessions', c.sessions, p.sessions, sparkSessions, '#10b981')}
+        ${miniKpi('New Users', c.newUsers, p.newUsers, sparkNew, '#f59e0b')}
+        ${miniKpi('Engagement', c.engagementRate, p.engagementRate, sparkEng, '#8b5cf6', v=>(v*100).toFixed(1)+'%')}
+        ${miniKpi('Avg. Session', c.avgDuration, p.avgDuration, null, null, fmt.dur)}
+        ${miniKpi('Bounce Rate', c.bounceRate, p.bounceRate, null, null, v=>(v*100).toFixed(1)+'%')}
+        ${miniKpi('Revenue (est)', estRev, estRev*0.95, null, null, v=>'$'+fmt.num(v))}
+        <div class="mini-card"><div class="mc-label">Active Now</div><div class="mc-value" style="color:var(--green);">${fmt.full(activeUsersNow)}</div><div class="mc-delta flat"><span class="pulse-dot" style="width:6px;height:6px;"></span> live</div></div>
+        <div class="mini-card"><div class="mc-label">Goal Pace</div><div class="mc-value">${goalTarget?goalPacePct.toFixed(0)+'%':'—'}</div><div class="mc-delta ${goalPacePct>=100?'up':goalPacePct>=80?'flat':'down'}">${goalTarget?fmt.num(c.pageviews)+' / '+fmt.num(goalTarget):'Set in Goals'}</div></div>
       </div>
-      <div class="grid grid-4 mt-16">
-        ${kpi('Bounce Rate','bounceRate',c.bounceRate||0,p.bounceRate||0,v=>((v||0)*100).toFixed(1)+'%')}
-        ${kpi('Avg. Session Duration','avgDuration',c.avgDuration||0,p.avgDuration||0,fmt.dur)}
-        ${kpi('Engagement Rate','engagementRate',c.engagementRate||0,p.engagementRate||0,v=>((v||0)*100).toFixed(1)+'%')}
-        ${kpi('New Users','newUsers',c.newUsers||0,p.newUsers||0)}
-      </div>
-      <div class="grid grid-3 mt-16">
-        ${kpi('Returning Users','returningUsers',c.returningUsers||0,p.returningUsers||0)}
-        ${kpi('Pages / Session','pagesPerSession',c.pagesPerSession||0,p.pagesPerSession||0,v=>(v||0).toFixed(2))}
-        ${kpi('Avg. Engagement Time','avgEngagementDuration',c.avgEngagementDuration||0,p.avgEngagementDuration||0,fmt.dur)}
-      </div>
-      ${(()=>{
-        // Highlights bar
-        const topArticle = movers.rising?.[0];
-        const bestSource = sources?.byChannel?.[0];
-        const t1Countries = (geo?.countries||[]).filter(g => ['United States','United Kingdom','Canada','Australia','New Zealand','Ireland'].includes(g.country));
-        const t1pv = t1Countries.reduce((s,g)=>s+(g.pageviews||0),0);
-        const estRev = ((c.pageviews||0)/1000*9*(t1pv/Math.max(c.pageviews||1,1)) + (c.pageviews||0)/1000*3.5*((c.pageviews||0-t1pv)/Math.max(c.pageviews||1,1)*0.4)).toFixed(2);
-        const highlights = [
-          topArticle ? `<div class="hl-item"><span class="hl-icon">📈</span><span class="hl-label">Top mover</span><span class="hl-val">${fmt.safe(topArticle.path)}</span><span class="hl-badge pos">+${((topArticle.current-topArticle.previous)/Math.max(topArticle.previous,1)*100).toFixed(0)}%</span></div>` : '',
-          `<div class="hl-item"><span class="hl-icon">💰</span><span class="hl-label">Est. ad revenue</span><span class="hl-val">$${parseFloat(estRev)>0?parseFloat(estRev).toFixed(0):'—'}</span><span class="hl-badge neu">this period</span></div>`,
-          bestSource ? `<div class="hl-item"><span class="hl-icon">🚦</span><span class="hl-label">Top channel</span><span class="hl-val">${fmt.safe(bestSource.channel)}</span><span class="hl-badge pos">${fmt.full(bestSource.sessions)} sessions</span></div>` : '',
-        ].filter(Boolean).join('<div class="hl-sep"></div>');
-        return highlights ? `<div class="highlights-bar mt-16">${highlights}</div>` : '';
-      })()}
-      <div class="card mt-16">
-        <div class="card-header"><h3>Traffic Trend</h3><span class="sub mono">${rangeLabel()}</span></div>
-        <div class="metric-toggles" id="ts-toggles">${togglesHtml}</div>
-        <div class="chart-box"><canvas id="chart-overview-series"></canvas></div>
-      </div>
-      <div class="card mt-16">
-        <div class="card-header"><h3>Live Pulse</h3><span class="sub">Last 30 minutes · updates every 60s</span></div>
-        <div class="chart-box-sm"><canvas id="chart-pulse"></canvas></div>
-      </div>
+
+      <!-- Row 2: Trend + Live Pulse -->
       <div class="grid grid-2 mt-16">
         <div class="card">
-          <div class="card-header"><h3>↑ Top Movers</h3><span class="sub">vs. previous period</span></div>
-          ${movers.rising?.length ? barList(movers.rising.slice(0,6),'path','current') : '<div class="empty-sm">No movers yet</div>'}
+          <div class="card-header"><h3>Traffic Trend</h3><span class="sub mono">${rangeLabel()}</span></div>
+          <div class="metric-toggles" id="ts-toggles">${togglesHtml}</div>
+          <div class="chart-box"><canvas id="chart-overview-series"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Live Pulse</h3><span class="sub"><span class="pulse-dot"></span> Last 30 min · ${fmt.full(activeUsersNow)} active</span></div>
+          <div class="chart-box"><canvas id="chart-pulse"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Row 3: Top 5s -->
+      <div class="section-title mt-24">Where Traffic Comes From · Where It Goes</div>
+      <div class="top5-grid">
+        ${top5Card('Top Sources', topSources, 'name', 'value', 'sources')}
+        ${top5Card('Top Pages', topPages, 'name', 'value', 'pages')}
+        ${top5Card('Top Search Queries', topQueries, 'name', 'value', 'queries')}
+        ${top5Card('Top Countries', topCountries, 'name', 'value', 'geo')}
+        ${top5Card('Top Referrers', topReferrers.length?topReferrers:topSources.filter(s=>s.name&&!String(s.name).includes('organic')), 'name', 'value', 'referrers')}
+      </div>
+
+      <!-- Row 4: Intelligence strip -->
+      <div class="section-title mt-24">Intelligence</div>
+      <div class="intel-strip">
+        <div class="intel-card intel-crit">
+          <div class="intel-title">🚨 Anomalies</div>
+          ${anomList.length ? anomList.map(a=>`<div class="intel-item"><span class="anom-badge ${a.severity||'warn'}">${a.type||'alert'}</span> ${fmt.safe((a.title||a.pagePath||'').slice(0,42))}<div class="intel-sub">${a.deltaPct?(a.deltaPct>0?'+':'')+a.deltaPct.toFixed(0)+'%':''} ${a.firstSeen?'· '+fmt.dateTime(a.firstSeen):''}</div></div>`).join('') : '<div class="empty-sm" style="padding:8px;">No anomalies detected</div>'}
+        </div>
+        <div class="intel-card intel-good">
+          <div class="intel-title">↑ Today's Winners</div>
+          ${risingList.length ? risingList.map(m=>{const pct=((m.current-m.previous)/Math.max(m.previous,1)*100).toFixed(0);return `<div class="intel-item">${fmt.safe((m.path||'').slice(0,48))}<div class="intel-sub"><span style="color:var(--green);">+${pct}%</span> · ${fmt.num(m.current)} pv</div></div>`;}).join('') : '<div class="empty-sm" style="padding:8px;">No risers</div>'}
+        </div>
+        <div class="intel-card intel-warn">
+          <div class="intel-title">↓ Today's Losers</div>
+          ${fallingList.length ? fallingList.map(m=>{const pct=((m.current-m.previous)/Math.max(m.previous,1)*100).toFixed(0);return `<div class="intel-item">${fmt.safe((m.path||'').slice(0,48))}<div class="intel-sub"><span style="color:var(--accent);">${pct}%</span> · ${fmt.num(m.current)} pv</div></div>`;}).join('') : '<div class="empty-sm" style="padding:8px;">No fallers</div>'}
+        </div>
+        <div class="intel-card intel-info">
+          <div class="intel-title">💥 Breakouts</div>
+          ${breakout ? `<div class="intel-item"><strong>${fmt.safe((breakout.path||'').slice(0,48))}</strong><div class="intel-sub">${fmt.num(breakout.current)} pv · ${(breakout.current/Math.max(breakout.previous,1)).toFixed(1)}× previous</div></div>` : '<div class="empty-sm" style="padding:8px;">No breakouts yet</div>'}
+          ${goalTarget ? `<div class="intel-item" style="margin-top:6px;"><strong>Goal Pace</strong><div class="intel-sub">${goalPacePct.toFixed(0)}% of ${fmt.num(goalTarget)} target</div></div>`:''}
+        </div>
+      </div>
+
+      <!-- Row 5: Monetization + Category mix -->
+      <div class="section-title mt-24">Monetization & Category Mix</div>
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-header"><h3>💰 Revenue Snapshot</h3><span class="sub">${rangeLabel()} · estimated</span></div>
+          <div class="grid grid-tight" style="grid-template-columns:repeat(5,1fr);margin-top:8px;">
+            <div class="mini-card"><div class="mc-label">Revenue</div><div class="mc-value">$${fmt.num(estRev)}</div></div>
+            <div class="mini-card"><div class="mc-label">Tier-1 Share</div><div class="mc-value ${t1Share>=0.5?'':'up'}" style="color:${t1Share>=0.5?'var(--green)':'var(--amber)'};">${(t1Share*100).toFixed(0)}%</div></div>
+            <div class="mini-card"><div class="mc-label">Blended RPM</div><div class="mc-value">$${blendedRpm.toFixed(2)}</div></div>
+            <div class="mini-card"><div class="mc-label">Projected /mo</div><div class="mc-value">$${fmt.num(estRev / Math.max(1, (series.series||[]).length) * 30)}</div></div>
+            <div class="mini-card"><div class="mc-label">Top T1 Country</div><div class="mc-value" style="font-size:13px;">${fmt.safe((geo?.countries||[]).filter(g=>t1List.includes(g.country))[0]?.country||'—')}</div></div>
+          </div>
+          <div style="margin-top:10px;font-size:11px;color:var(--text-dim);">RPM tiers: T1 $${rpm.tier1} · T2 $${rpm.tier2} · T3 $${rpm.tier3} (editable in Settings)</div>
         </div>
         <div class="card">
           <div class="card-header"><h3>Category Mix</h3><span class="sub">pageviews by vertical</span></div>
-          <div class="chart-box-sm"><canvas id="chart-overview-cats"></canvas></div>
+          <div class="chart-box-sm" style="height:200px;"><canvas id="chart-overview-cats"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Row 6: Device + Audience split -->
+      <div class="grid grid-4 mt-16">
+        ${(()=>{const dev=overview.deviceSplit||{};const total=(dev.desktop||0)+(dev.mobile||0)+(dev.tablet||0)||1;return `
+          <div class="card card-compact"><div class="card-title">Device Split</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.8;">
+              <div>📱 Mobile: <strong>${((dev.mobile||0)/total*100).toFixed(0)}%</strong></div>
+              <div>💻 Desktop: <strong>${((dev.desktop||0)/total*100).toFixed(0)}%</strong></div>
+              <div>📲 Tablet: <strong>${((dev.tablet||0)/total*100).toFixed(0)}%</strong></div>
+            </div>
+          </div>`;})()}
+        ${(()=>{const nu=c.newUsers||0, ru=c.returningUsers||0, tot=nu+ru||1;return `
+          <div class="card card-compact"><div class="card-title">New vs Returning</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.8;">
+              <div>New: <strong>${(nu/tot*100).toFixed(0)}%</strong> <span style="color:var(--text-dim);">(${fmt.num(nu)})</span></div>
+              <div>Returning: <strong>${(ru/tot*100).toFixed(0)}%</strong> <span style="color:var(--text-dim);">(${fmt.num(ru)})</span></div>
+              <div style="height:6px;background:var(--bg-elev-2);border-radius:3px;margin-top:6px;overflow:hidden;"><div style="width:${nu/tot*100}%;height:100%;background:var(--amber);"></div></div>
+            </div>
+          </div>`;})()}
+        <div class="card card-compact"><div class="card-title">Pages / Session</div><div class="kpi-sm">${(c.pagesPerSession||0).toFixed(2)}</div><div class="kpi-delta flat">${fmt.delta(c.pagesPerSession||0, p.pagesPerSession||0).sym} vs prev</div></div>
+        <div class="card card-compact"><div class="card-title">Engaged Time</div><div class="kpi-sm">${fmt.dur(c.avgEngagementDuration||0)}</div><div class="kpi-delta flat">per session</div></div>
+      </div>
+
+      <!-- Row 7: Search Console health -->
+      ${(()=>{
+        const s = gscSummary?.current || gscSummary?.data?.current || gscSummary || {};
+        const sp = gscSummary?.previous || gscSummary?.data?.previous || {};
+        const totalClicks = s.clicks ?? (queries?.queries||[]).reduce((a,q)=>a+(q.clicks||0),0);
+        const totalImpr = s.impressions ?? (queries?.queries||[]).reduce((a,q)=>a+(q.impressions||0),0);
+        const avgCtr = totalImpr ? (totalClicks/totalImpr) : 0;
+        const avgPos = s.position ?? ((queries?.queries||[]).length ? (queries.queries.reduce((a,q)=>a+(q.position||0)*(q.impressions||1),0)/((queries?.queries||[]).reduce((a,q)=>a+(q.impressions||1),0))) : 0);
+        return `
+        <div class="section-title mt-24">🔍 Search Console Health</div>
+        <div class="kpi-strip" style="grid-template-columns:repeat(6,minmax(0,1fr));">
+          <div class="mini-card"><div class="mc-label">GSC Clicks</div><div class="mc-value">${fmt.full(totalClicks)}</div><div class="mc-delta ${fmt.delta(totalClicks, sp.clicks||totalClicks*0.95).dir}">${fmt.delta(totalClicks, sp.clicks||totalClicks*0.95).sym} ${fmt.delta(totalClicks, sp.clicks||totalClicks*0.95).pct.toFixed(1)}%</div></div>
+          <div class="mini-card"><div class="mc-label">Impressions</div><div class="mc-value">${fmt.full(totalImpr)}</div><div class="mc-delta ${fmt.delta(totalImpr, sp.impressions||totalImpr*0.95).dir}">${fmt.delta(totalImpr, sp.impressions||totalImpr*0.95).sym} ${fmt.delta(totalImpr, sp.impressions||totalImpr*0.95).pct.toFixed(1)}%</div></div>
+          <div class="mini-card"><div class="mc-label">Avg. CTR</div><div class="mc-value">${(avgCtr*100).toFixed(2)}%</div><div class="mc-delta flat">industry ~2.5%</div></div>
+          <div class="mini-card"><div class="mc-label">Avg. Position</div><div class="mc-value ${avgPos<=10?'':avgPos<=20?'':''}" style="color:${avgPos<=10?'var(--green)':avgPos<=20?'var(--amber)':'var(--accent)'};">${avgPos.toFixed(1)}</div><div class="mc-delta flat">${avgPos<=10?'page 1':avgPos<=20?'page 2':'deeper'}</div></div>
+          <div class="mini-card"><div class="mc-label">Indexed Pages</div><div class="mc-value">${fmt.full(s.indexedPages||pagesData?.pages?.length||0)}</div><div class="mc-delta flat">ranking</div></div>
+          <div class="mini-card"><div class="mc-label">Branded Share</div><div class="mc-value">${(()=>{const qs=queries?.queries||[];const b=qs.filter(q=>isBrandQuery(q.query)).reduce((a,q)=>a+(q.clicks||0),0);const t=qs.reduce((a,q)=>a+(q.clicks||0),0);return t?((b/t)*100).toFixed(0)+'%':'—';})()}</div><div class="mc-delta flat">of clicks</div></div>
+        </div>`;
+      })()}
+
+      <!-- Row 8: Top Performers — Authors, Categories, Channels, Landing Pages -->
+      <div class="section-title mt-24">Top Performers</div>
+      <div class="top5-grid" style="grid-template-columns:repeat(4,minmax(0,1fr));">
+        ${top5Card('Top Authors', (authors?.authors||[]).slice(0,5).map(a=>({name:a.author||a.name, value:a.pageviews||a.articles||0})), 'name','value','authors')}
+        ${top5Card('Top Categories', (categories?.categories||[]).slice(0,5).map(c=>({name:c.category, value:c.pageviews||0})), 'name','value','categories')}
+        ${top5Card('Top Channels', (sources?.byChannel||[]).slice(0,5).map(s=>({name:s.channel, value:s.sessions||s.pageviews||0})), 'name','value','sources')}
+        ${top5Card('Top Landing Pages', (landingPages?.pages||landingPages?.data||[]).slice(0,5).map(p=>({name:p.path||p.pagePath, value:p.entrances||p.sessions||0})), 'name','value','landing-pages')}
+      </div>
+
+      <!-- Row 9: Search Movers — Rising & Falling Queries -->
+      ${queries?.queries?.length ? (()=>{
+        const qs = queries.queries.map(q => {
+          const prevClicks = q.previousClicks ?? q.prevClicks ?? q.previous?.clicks;
+          const deltaPct = (prevClicks != null && prevClicks >= 0) ? ((q.clicks||0)-prevClicks)/Math.max(prevClicks,1)*100 : null;
+          return {...q, deltaPct};
+        });
+        const hasDelta = qs.some(q => q.deltaPct != null);
+        const rising = hasDelta
+          ? qs.filter(q=>q.deltaPct!=null && q.deltaPct>10).sort((a,b)=>b.deltaPct-a.deltaPct).slice(0,5)
+          : [...qs].sort((a,b)=>(b.clicks||0)-(a.clicks||0)).slice(0,5);
+        const falling = hasDelta
+          ? qs.filter(q=>q.deltaPct!=null && q.deltaPct<-10).sort((a,b)=>a.deltaPct-b.deltaPct).slice(0,5)
+          : [...qs].filter(q=>(q.position||0)>20).sort((a,b)=>(b.impressions||0)-(a.impressions||0)).slice(0,5);
+        // Lower threshold for small sites — position 2–20, impressions ≥ 3
+        const topOpp = [...qs].filter(q=>(q.position||99)>=2 && (q.position||99)<=20 && (q.impressions||0)>=3).sort((a,b)=>(b.impressions||0)-(a.impressions||0)).slice(0,5);
+        const risingLabel = hasDelta ? '↑ Rising Queries' : '↑ Top Clicked Queries';
+        const fallingLabel = hasDelta ? '↓ Falling Queries' : '↓ Low-Rank Queries';
+        return `
+        <div class="section-title mt-24">Search Movers & Opportunities</div>
+        <div class="top5-grid" style="grid-template-columns:repeat(3,minmax(0,1fr));">
+          <div class="top5-card"><h4>${risingLabel} <a class="mini-link" data-goto="query-intelligence">All →</a></h4>
+            <div class="top5-list">${rising.length ? rising.map((q,i)=>`<div class="top5-row"><span class="t5-rank">${i+1}</span><span class="t5-label" title="${fmt.safe(q.query)}">${fmt.safe(q.query)}</span><span class="t5-val" style="color:var(--green);">${hasDelta?'+'+q.deltaPct.toFixed(0)+'%':fmt.num(q.clicks||0)+'c'}</span></div>`).join('') : '<div class="empty-sm" style="padding:8px;">No data</div>'}</div>
+          </div>
+          <div class="top5-card"><h4>${fallingLabel}</h4>
+            <div class="top5-list">${falling.length ? falling.map((q,i)=>`<div class="top5-row"><span class="t5-rank">${i+1}</span><span class="t5-label" title="${fmt.safe(q.query)}">${fmt.safe(q.query)}</span><span class="t5-val" style="color:var(--accent);">${hasDelta?q.deltaPct.toFixed(0)+'%':'#'+(q.position||0).toFixed(0)}</span></div>`).join('') : '<div class="empty-sm" style="padding:8px;">No data</div>'}</div>
+          </div>
+          <div class="top5-card"><h4>🎯 Quick SEO Wins <a class="mini-link" data-goto="seo-opportunities">All →</a></h4>
+            <div class="top5-list">${topOpp.length ? topOpp.map((q,i)=>`<div class="top5-row"><span class="t5-rank">${i+1}</span><span class="t5-label" title="${fmt.safe(q.query)}">${fmt.safe(q.query)}</span><span class="t5-val">#${(q.position||0).toFixed(0)} · ${fmt.num(q.impressions||0)}i</span></div>`).join('') : '<div class="empty-sm" style="padding:8px;">No near-page-1 targets (need queries with position 2–20 & ≥3 impressions)</div>'}</div>
+          </div>
+        </div>`;
+      })() : ''}
+
+      <!-- Row 10: Hourly heatmap + Best publishing time -->
+      ${(()=>{
+        const hours = hourly?.hours || hourly?.data || [];
+        const hourMap = {};
+        const hasHourly = hours.length > 0;
+        if (hasHourly) {
+          hours.forEach(h => {
+            const hr = parseInt(h.hour);
+            if (!isNaN(hr) && hr>=0 && hr<24) hourMap[hr] = (hourMap[hr]||0) + (h.pageviews||0);
+          });
+        }
+        const hourMapValid = Object.keys(hourMap).length > 0 && !isNaN(Math.max(...Object.values(hourMap)));
+        const maxH = hourMapValid ? Math.max(...Object.values(hourMap), 1) : 1;
+        const cells = Array.from({length:24}, (_,i)=>{
+          const v = hourMap[i]||0;
+          const intensity = maxH>0 ? v/maxH : 0;
+          const bg = hourMapValid ? `rgba(229,62,62,${0.1 + intensity*0.9})` : 'var(--bg-elev-2)';
+          return `<div class="heat-cell" style="background:${bg};" title="${i}:00 — ${fmt.num(v)} pv">${i}</div>`;
+        }).join('');
+        const sortedEntries = Object.entries(hourMap).filter(([h,v])=>!isNaN(parseInt(h)) && v>0);
+        const peakEntry = sortedEntries.length ? sortedEntries.sort((a,b)=>b[1]-a[1])[0] : null;
+        const quietEntry = sortedEntries.length ? sortedEntries.sort((a,b)=>a[1]-b[1])[0] : null;
+        const peakHour = peakEntry ? [parseInt(peakEntry[0]), peakEntry[1]] : null;
+        const quietHour = quietEntry ? [parseInt(quietEntry[0]), quietEntry[1]] : null;
+        const noteHtml = !hasHourly ? '<div style="font-size:11px;color:var(--text-dim);margin-top:6px;">⚠ Requires <code>/api/hourly</code> endpoint for per-hour data (see Worker Endpoint Spec).</div>' : '';
+        return `
+        <div class="section-title mt-24">📅 When Your Audience Is Active</div>
+        <div class="grid grid-2">
+          <div class="card"><div class="card-header"><h3>Hourly Traffic Heatmap</h3><span class="sub">hours (local)</span></div>
+            <div class="heat-grid">${cells}</div>
+            <div style="display:flex;gap:16px;margin-top:10px;font-size:11px;color:var(--text-dim);"><span>🔥 Peak: <strong style="color:var(--accent);">${peakHour!=null?peakHour[0]+':00':'—'}</strong></span><span>😴 Quietest: <strong>${quietHour!=null?quietHour[0]+':00':'—'}</strong></span></div>
+            ${noteHtml}
+          </div>
+          <div class="card"><div class="card-header"><h3>📝 Publishing Insights</h3><span class="sub">best times to publish</span></div>
+            <div style="display:flex;flex-direction:column;gap:8px;font-size:12px;">
+              <div><strong>Best publish window:</strong> ${peakHour!=null?peakHour[0]+':00 – '+((peakHour[0]+2)%24)+':00':'— (needs hourly data)'}</div>
+              <div><strong>Avg content age:</strong> ${(()=>{const ages=(articlesAll?.articles||[]).map(a=>fmt.daysAgo(a.date)).filter(d=>d>=0);return ages.length?(ages.reduce((a,b)=>a+b,0)/ages.length).toFixed(0)+'d':'—';})()}</div>
+              <div><strong>Fresh (< 7d) articles:</strong> ${(articlesAll?.articles||[]).filter(a=>fmt.daysAgo(a.date)<=7).length}</div>
+              <div><strong>Evergreen performers:</strong> ${(articlesAll?.articles||[]).filter(a=>fmt.daysAgo(a.date)>=30 && (a.pageviews||0)>=50).length}</div>
+              <div><strong>Articles this period:</strong> ${(articlesAll?.articles||[]).length}</div>
+              <div><strong>Pageviews per article:</strong> ${(()=>{const as=articlesAll?.articles||[];return as.length?fmt.num(as.reduce((a,b)=>a+(b.pageviews||0),0)/as.length):'—';})()}</div>
+            </div>
+          </div>
+        </div>`;
+      })()}
+
+      <!-- Row 11: Engagement depth -->
+      <div class="section-title mt-24">Engagement & Quality</div>
+      <div class="grid grid-4">
+        <div class="card card-compact"><div class="card-title">Quality Score</div>
+          <div class="kpi-sm">${(()=>{const e=(c.engagementRate||0)*50;const b=(1-(c.bounceRate||0))*30;const d=Math.min((c.avgEngagementDuration||0)/120,1)*20;return (e+b+d).toFixed(0);})()}/100</div>
+          <div class="kpi-delta flat">eng + ¬bounce + time</div>
+        </div>
+        <div class="card card-compact"><div class="card-title">Scroll Depth (avg)</div>
+          <div class="kpi-sm">${overview.avgScrollDepth?(overview.avgScrollDepth*100).toFixed(0)+'%':'—'}</div>
+          <div class="kpi-delta flat">of page read</div>
+        </div>
+        <div class="card card-compact"><div class="card-title">Social Share</div>
+          <div class="kpi-sm">${(()=>{const social=['facebook','twitter','reddit','instagram','linkedin','tiktok','pinterest','x'];const ss=(sources?.sources||[]).filter(s=>social.some(soc=>(s.source||'').toLowerCase().includes(soc))).reduce((a,b)=>a+(b.sessions||0),0);const tot=(sources?.sources||[]).reduce((a,b)=>a+(b.sessions||0),0)||1;return ((ss/tot)*100).toFixed(0)+'%';})()}</div>
+          <div class="kpi-delta flat">of sessions</div>
+        </div>
+        <div class="card card-compact"><div class="card-title">Organic Share</div>
+          <div class="kpi-sm">${(()=>{const org=(sources?.byChannel||[]).find(c=>/organic/i.test(c.channel));const tot=(sources?.byChannel||[]).reduce((a,b)=>a+(b.sessions||0),0)||1;return org?((org.sessions/tot)*100).toFixed(0)+'%':'—';})()}</div>
+          <div class="kpi-delta flat">of sessions</div>
         </div>
       </div>
     `;
@@ -980,7 +1424,6 @@ async function renderOverview() {
     }
     renderTsChart();
 
-    // Metric toggle handlers
     $$('#ts-toggles .mtoggle').forEach(btn => {
       btn.addEventListener('click', () => {
         const m = btn.dataset.metric;
@@ -992,6 +1435,8 @@ async function renderOverview() {
         renderTsChart();
       });
     });
+
+    $$('[data-goto]').forEach(a => a.addEventListener('click', () => renderView(a.dataset.goto)));
 
     const pLabels = pulse.pulse.map(p => p.minutesAgo===0?'now':`-${p.minutesAgo}m`);
     makeLineChart('chart-pulse', pLabels, [{label:'Active users',data:pulse.pulse.map(p=>p.activeUsers),fill:true}]);
@@ -1071,25 +1516,58 @@ async function renderArticles() {
     const catChips = `<div class="chips mb-16"><span style="color:var(--text-dim);font-size:11px;text-transform:uppercase;letter-spacing:0.08em;margin-right:4px;align-self:center;">Category:</span><div class="chip ${!catFilter?'active':''}" data-chip="articles-cat|">All</div>${allCats.map(c=>`<div class="chip ${catFilter===c?'active':''}" data-chip="articles-cat|${fmt.safe(c)}">${fmt.safe(c)}</div>`).join('')}</div>`;
     const statusChips = `<div class="chips mb-16"><span style="color:var(--text-dim);font-size:11px;text-transform:uppercase;letter-spacing:0.08em;margin-right:4px;align-self:center;">Status:</span><div class="chip ${!statusFilter?'active':''}" data-chip="articles-status|">All</div>${['Rising','New','Up','Flat','Down','Falling','Dead'].map(s=>`<div class="chip ${statusFilter===s?'active':''}" data-chip="articles-status|${s}">${s}</div>`).join('')}</div>`;
 
-    el.innerHTML = infoBox('articles') + catChips + statusChips + makeTable({
-      id:'articles', title:'All Articles', subtitle:`Range: ${rangeLabel()}`,
-      data:filtered, defaultSort:'pageviews', defaultSortDir:'desc',
-      searchKeys:['titleClean','catDisplay','author'], exportName:'articles', onRowClick:true,
-      columns:[
-        {key:'titleClean',label:'Article',render:a=>`<div class="title-cell">${a.featuredImage?`<img class="thumb" src="${fmt.safe(a.featuredImage)}" loading="lazy">`:'<div class="thumb"></div>'}<div><div class="title-text">${a.titleClean}${a.isEvergreen?' <span class="status-pill status-evergreen">Evergreen</span>':''}</div><div style="font-size:11px;color:var(--text-dim);margin-top:2px;">${a.categories.map(c=>`<span class="cat-badge ${fmt.catClass(c)}">${fmt.safe(c)}</span>`).join('')} · ${fmt.safe(a.author)} · ${fmt.dateTime(a.date)}</div></div></div>`},
-        {key:'status',label:'Status',tip:'status',render:a=>`<span class="status-pill status-${a.status.toLowerCase()}">${a.status}</span>`},
-        {key:'pageviews',label:'Pageviews',tip:'pageviews',num:true,fmt:fmt.full},
-        {key:'users',label:'Users',tip:'users',num:true,fmt:fmt.full},
+    // Column set toggle — persist in localStorage
+    const colSet = STATE.chipFilter['articles-cols'] || localStorage.getItem('tff_article_cols') || 'performance';
+    const colSetChips = `<div class="chips mb-16"><span style="color:var(--text-dim);font-size:11px;text-transform:uppercase;letter-spacing:0.08em;margin-right:4px;align-self:center;">Columns:</span>
+      <div class="chip ${colSet==='performance'?'active':''}" data-chip="articles-cols|performance">Performance</div>
+      <div class="chip ${colSet==='attribution'?'active':''}" data-chip="articles-cols|attribution">Attribution</div>
+      <div class="chip ${colSet==='seo'?'active':''}" data-chip="articles-cols|seo">SEO</div>
+      <div class="chip ${colSet==='revenue'?'active':''}" data-chip="articles-cols|revenue">Revenue</div>
+    </div>`;
+
+    const titleCol = {key:'titleClean',label:'Article',render:a=>`<div class="title-cell">${a.featuredImage?`<img class="thumb" src="${fmt.safe(a.featuredImage)}" loading="lazy">`:'<div class="thumb"></div>'}<div><div class="title-text">${a.titleClean}${a.isEvergreen?' <span class="status-pill status-evergreen">Evergreen</span>':''}${a.anomalyFlag?` <span class="anom-badge ${a.anomalyFlag}">${a.anomalyFlag}</span>`:''}</div><div style="font-size:11px;color:var(--text-dim);margin-top:2px;">${a.categories.map(c=>`<span class="cat-badge ${fmt.catClass(c)}">${fmt.safe(c)}</span>`).join('')} · ${fmt.safe(a.author)} · ${fmt.dateTime(a.date)}</div></div></div>`};
+    const statusCol = {key:'status',label:'Status',tip:'status',render:a=>`<span class="status-pill status-${a.status.toLowerCase()}">${a.status}</span>`};
+    const pvCol = {key:'pageviews',label:'Pageviews',tip:'pageviews',num:true,fmt:fmt.full};
+    const usersCol = {key:'users',label:'Users',tip:'users',num:true,fmt:fmt.full};
+
+    const columnsByMode = {
+      performance: [titleCol, statusCol, pvCol, usersCol,
         {key:'engagementRate',label:'Eng. Rate',tip:'engagementRate',num:true,fmt:fmt.pct},
         {key:'avgDuration',label:'Avg. Time',tip:'avgDuration',num:true,fmt:fmt.dur},
         {key:'readingTime',label:'Read Time',tip:'readingTime',num:true,fmt:v=>v?v+'m':'—'},
         {key:'contentScore',label:'Score',tip:'contentScore',num:true,fmt:fmt.full},
+      ],
+      attribution: [titleCol, pvCol,
+        {key:'topSource',label:'Top Source',render:a=>a.topSource?`<span class="attr-chip ${sourceClass(a.topSource)}">${fmt.safe(a.topSource)}</span>`:'<span style="color:var(--text-dim);">—</span>'},
+        {key:'topReferrer',label:'Top Referrer',render:a=>a.topReferrer?`<span class="attr-chip">${fmt.safe(a.topReferrer)}</span>`:'<span style="color:var(--text-dim);">—</span>'},
+        {key:'topQuery',label:'Top Query',render:a=>a.topQuery?`<span style="font-size:11px;color:var(--text-muted);">🔍 ${fmt.safe(a.topQuery)}</span>`:'<span style="color:var(--text-dim);">—</span>'},
+        {key:'topCountry',label:'Top Country',render:a=>a.topCountry?`<span>${countryFlag(a.topCountry)} ${fmt.safe(a.topCountry)}</span>`:'<span style="color:var(--text-dim);">—</span>'},
+        {key:'deviceSplit',label:'Devices',render:a=>a.deviceSplit?devBar(a.deviceSplit):'<span style="color:var(--text-dim);">—</span>'},
+      ],
+      seo: [titleCol, pvCol,
         {key:'impressions',label:'Impr.',tip:'impressions',num:true,fmt:fmt.full},
         {key:'clicks',label:'Clicks',tip:'clicks',num:true,fmt:fmt.full},
         {key:'ctr',label:'CTR',tip:'ctr',num:true,fmt:fmt.pct},
         {key:'position',label:'Pos.',tip:'position',num:true,render:r=>`<span class="${fmt.posClass(r.position)}">${fmt.pos(r.position)}</span>`},
+        {key:'topQuery',label:'Top Query',render:a=>a.topQuery?`<span style="font-size:11px;color:var(--text-muted);">${fmt.safe(a.topQuery)}</span>`:'<span style="color:var(--text-dim);">—</span>'},
       ],
+      revenue: [titleCol, pvCol, usersCol,
+        {key:'estRevenue',label:'Est. Revenue',num:true,render:a=>a.estRevenue!=null?`<span style="color:var(--green);font-weight:600;">$${fmt.num(a.estRevenue)}</span>`:'<span style="color:var(--text-dim);">—</span>'},
+        {key:'topCountry',label:'Top Country',render:a=>a.topCountry?`<span>${countryFlag(a.topCountry)} ${fmt.safe(a.topCountry)}</span>`:'<span style="color:var(--text-dim);">—</span>'},
+        {key:'daysOld',label:'Age',num:true,fmt:v=>v!=null?v+'d':'—'},
+        {key:'contentScore',label:'Score',tip:'contentScore',num:true,fmt:fmt.full},
+      ],
+    };
+
+    el.innerHTML = infoBox('articles') + catChips + statusChips + colSetChips + makeTable({
+      id:'articles', title:'All Articles', subtitle:`Range: ${rangeLabel()} · ${colSet} columns`,
+      data:filtered, defaultSort:'pageviews', defaultSortDir:'desc',
+      searchKeys:['titleClean','catDisplay','author','topSource','topQuery'], exportName:'articles', onRowClick:true,
+      columns: columnsByMode[colSet] || columnsByMode.performance,
     });
+    if (STATE.chipFilter['articles-cols']) {
+      localStorage.setItem('tff_article_cols', STATE.chipFilter['articles-cols']);
+    }
   } catch(e) { el.innerHTML = infoBox('articles')+`<div class="error">Failed to load articles: ${fmt.safe(e.message)}</div>`; }
 }
 
@@ -1954,8 +2432,23 @@ function openSettings() {
       <div><div class="card-title">Theme</div><div class="chips"><div class="chip ${STATE.theme==='dark'?'active':''}" data-set-theme="dark">Dark</div><div class="chip ${STATE.theme==='light'?'active':''}" data-set-theme="light">Light</div></div></div>
       <div><div class="card-title">Accent Color</div><div class="chips"><div class="chip ${STATE.accent==='red'?'active':''}" data-set-accent="red">Red</div><div class="chip ${STATE.accent==='blue'?'active':''}" data-set-accent="blue">Blue</div><div class="chip ${STATE.accent==='green'?'active':''}" data-set-accent="green">Green</div><div class="chip ${STATE.accent==='purple'?'active':''}" data-set-accent="purple">Purple</div><div class="chip ${STATE.accent==='amber'?'active':''}" data-set-accent="amber">Amber</div></div></div>
       <div><div class="card-title">Table Density</div><div class="chips"><div class="chip ${STATE.density==='compact'?'active':''}" data-set-density="compact">Compact</div><div class="chip ${STATE.density==='normal'?'active':''}" data-set-density="normal">Normal</div><div class="chip ${STATE.density==='spacious'?'active':''}" data-set-density="spacious">Spacious</div></div></div>
+      <div><div class="card-title">Brand Terms <span style="color:var(--text-dim);font-weight:normal;font-size:11px;">(comma-separated; used for branded vs non-branded query split)</span></div><input type="text" id="set-brand-terms" class="input" style="width:100%;" value="${fmt.safe((STATE.brandTerms||[]).join(', '))}"></div>
+      <div><div class="card-title">RPM Tier Overrides <span style="color:var(--text-dim);font-weight:normal;font-size:11px;">(USD per 1000 pageviews; leave blank for defaults $9 / $3.50 / $0.80)</span></div>
+        <div style="display:flex;gap:8px;">
+          <label style="flex:1;"><div style="font-size:11px;color:var(--text-dim);">Tier 1 (US/UK/CA/AU)</div><input type="number" step="0.01" id="set-rpm-t1" class="input" style="width:100%;" value="${STATE.rpmOverride?.t1 ?? ''}" placeholder="9.00"></label>
+          <label style="flex:1;"><div style="font-size:11px;color:var(--text-dim);">Tier 2 (EU/JP/etc)</div><input type="number" step="0.01" id="set-rpm-t2" class="input" style="width:100%;" value="${STATE.rpmOverride?.t2 ?? ''}" placeholder="3.50"></label>
+          <label style="flex:1;"><div style="font-size:11px;color:var(--text-dim);">Tier 3 (rest)</div><input type="number" step="0.01" id="set-rpm-t3" class="input" style="width:100%;" value="${STATE.rpmOverride?.t3 ?? ''}" placeholder="0.80"></label>
+        </div>
+      </div>
+      <div><div class="card-title">Content ROI Inputs</div>
+        <div style="display:flex;gap:8px;">
+          <label style="flex:1;"><div style="font-size:11px;color:var(--text-dim);">Hours per article</div><input type="number" step="0.1" id="set-hours" class="input" style="width:100%;" value="${STATE.hoursPerArticle}"></label>
+          <label style="flex:1;"><div style="font-size:11px;color:var(--text-dim);">Hourly rate (USD)</div><input type="number" step="0.5" id="set-rate" class="input" style="width:100%;" value="${STATE.hourlyRate}"></label>
+          <div style="display:flex;align-items:flex-end;"><button class="btn btn-sm" id="save-settings">Save</button></div>
+        </div>
+      </div>
       <div><div class="card-title">Reset</div><div style="display:flex;gap:8px;flex-wrap:wrap;"><button class="btn btn-sm" id="reset-dismissed">Re-show all info boxes</button><button class="btn btn-sm" id="reset-notes">Clear all notes</button><button class="btn btn-sm" id="reset-cache">Clear cache</button></div></div>
-      <div style="color:var(--text-dim);font-size:11px;">Preferences saved locally. TFF Analytics v3.</div>
+      <div style="color:var(--text-dim);font-size:11px;">Preferences saved locally. TFF Analytics v4.</div>
     </div>
   `;
   $('#settings-modal').classList.add('active');
@@ -1965,22 +2458,785 @@ function openSettings() {
   $('#reset-dismissed')?.addEventListener('click',()=>{STATE.dismissed={};localStorage.removeItem('tff_dismissed');renderView(STATE.view);closeModal('settings-modal');});
   $('#reset-notes')?.addEventListener('click',()=>{if(confirm('Delete all article notes?')){STATE.notes={};localStorage.removeItem('tff_notes');closeModal('settings-modal');}});
   $('#reset-cache')?.addEventListener('click',()=>{STATE.cache={};renderView(STATE.view);closeModal('settings-modal');});
+  $('#save-settings')?.addEventListener('click',()=>{
+    const terms = ($('#set-brand-terms').value||'').split(',').map(s=>s.trim().toLowerCase()).filter(Boolean);
+    STATE.brandTerms = terms;
+    localStorage.setItem('tff_brand_terms', JSON.stringify(terms));
+    const t1 = parseFloat($('#set-rpm-t1').value), t2 = parseFloat($('#set-rpm-t2').value), t3 = parseFloat($('#set-rpm-t3').value);
+    if (isFinite(t1)||isFinite(t2)||isFinite(t3)) {
+      STATE.rpmOverride = { t1: isFinite(t1)?t1:undefined, t2: isFinite(t2)?t2:undefined, t3: isFinite(t3)?t3:undefined };
+      localStorage.setItem('tff_rpm_override', JSON.stringify(STATE.rpmOverride));
+    } else {
+      STATE.rpmOverride = null; localStorage.removeItem('tff_rpm_override');
+    }
+    const hrs = parseFloat($('#set-hours').value); if (isFinite(hrs)) { STATE.hoursPerArticle = hrs; localStorage.setItem('tff_hours_per_article', String(hrs)); }
+    const rate = parseFloat($('#set-rate').value); if (isFinite(rate)) { STATE.hourlyRate = rate; localStorage.setItem('tff_hourly_rate', String(rate)); }
+    closeModal('settings-modal'); renderView(STATE.view);
+  });
 }
 
 // ============================================================
 // Command palette
 // ============================================================
+// ============================================================
+// NEW VIEW RENDERERS — v4 Upgrade
+// ============================================================
+
+// ── Live Hits ──────────────────────────────────────────────
+async function renderLiveHits() {
+  const el = $('#view-live-hits');
+  el.innerHTML = infoBox('live-hits') + `
+    <div class="live-ticker">
+      <div class="live-ticker-head">
+        <div><h3 style="font-size:15px;">📡 Live Hit Stream</h3><span class="sub" style="color:var(--text-dim);font-size:12px;"><span class="pulse-dot"></span> <span id="live-hits-count">0</span> hits · updated <span id="live-hits-age">just now</span></span></div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          ${STATE.liveHitsPaused?'<span class="live-paused-badge">⏸ Paused</span>':''}
+          <button class="btn btn-sm" id="live-hits-pause">${STATE.liveHitsPaused?'▶ Resume':'⏸ Pause'}</button>
+          <button class="btn btn-sm" id="live-hits-clear">Clear</button>
+          <button class="btn btn-sm" id="live-hits-refresh">↻ Now</button>
+        </div>
+      </div>
+      <div id="live-hits-feed" class="live-ticker-feed">
+        <div class="loading">Connecting to live stream…</div>
+      </div>
+    </div>`;
+
+  async function pollLiveHits() {
+    if (STATE.view !== 'live-hits' || STATE.liveHitsPaused) return;
+    const data = await apiSafe('/api/live-hits?limit=100', {ttl:5000, fresh:true});
+    const hits = data?.hits || data?.data?.hits || [];
+    if (hits.length) {
+      const seen = new Set(STATE.liveHitsBuffer.map(h=>h.ts+'|'+h.page));
+      const newHits = hits.filter(h => !seen.has((h.ts||'')+'|'+h.page));
+      STATE.liveHitsBuffer = [...newHits, ...STATE.liveHitsBuffer].slice(0,500);
+    }
+    const feed = $('#live-hits-feed');
+    if (!feed) return;
+    if (!STATE.liveHitsBuffer.length) {
+      feed.innerHTML = `<div class="empty" style="padding:40px;">
+        No live hits yet.<br>
+        <span style="font-size:11px;">Requires /api/live-hits endpoint in worker (see Worker Endpoint Spec).</span>
+      </div>`;
+      return;
+    }
+    feed.innerHTML = STATE.liveHitsBuffer.slice(0,200).map(h => {
+      const t = h.ts ? new Date(h.ts).toLocaleTimeString('en-US',{hour12:false}) : 'now';
+      return `<div class="live-hit-row">
+        <div class="live-hit-time">${fmt.safe(t)}</div>
+        <div class="live-hit-page" title="${fmt.safe(h.page||'')}">${fmt.safe(h.page||'—')}</div>
+        <div class="live-hit-src"><span class="attr-chip ${sourceClass(h.source)}">${fmt.safe(h.source||h.medium||'direct')}</span></div>
+        <div class="live-hit-cc">${countryFlag(h.country)} ${fmt.safe(h.country||'')}</div>
+        <div class="live-hit-dev">${deviceIcon(h.device)} ${fmt.safe(h.device||'')}</div>
+      </div>`;
+    }).join('');
+    $('#live-hits-count').textContent = STATE.liveHitsBuffer.length;
+    $('#live-hits-age').textContent = new Date().toLocaleTimeString('en-US',{hour12:false});
+  }
+
+  $('#live-hits-pause').addEventListener('click', () => {
+    STATE.liveHitsPaused = !STATE.liveHitsPaused;
+    renderView('live-hits');
+  });
+  $('#live-hits-clear').addEventListener('click', () => {
+    STATE.liveHitsBuffer = [];
+    renderView('live-hits');
+  });
+  $('#live-hits-refresh').addEventListener('click', pollLiveHits);
+
+  await pollLiveHits();
+  if (STATE._liveInterval) clearInterval(STATE._liveInterval);
+  STATE._liveInterval = setInterval(pollLiveHits, 5000);
+}
+
+// ── Daily Digest ────────────────────────────────────────────
+async function renderDailyDigest() {
+  const el = $('#view-daily-digest');
+  // Persistent digest config
+  STATE.digestCfg = STATE.digestCfg || JSON.parse(localStorage.getItem('tff_digest_cfg') || 'null') || {
+    period: 'yesterday', compare: 'prev', date: new Date(Date.now()-86400000).toISOString().slice(0,10),
+    sections: {glance:true, winners:true, losers:true, breakouts:true, alerts:true, queries:true, authors:true, categories:true, geo:true, devices:true, sources:true, landing:true, revenue:true, publishing:true, seowins:true, actions:true}
+  };
+  const cfg = STATE.digestCfg;
+
+  const periodToRange = { yesterday:'yesterday', '7d':'7d', '28d':'28d', 'mtd':'mtd', 'qtd':'90d', 'ytd':'365d' };
+  const range = periodToRange[cfg.period] || 'yesterday';
+  const compareQ = cfg.compare==='prev' ? '&compare=prev' : cfg.compare==='yoy' ? '&compare=yoy' : '';
+
+  // Control panel (always rendered first so user can change settings)
+  const controls = `
+    <div class="card mb-16 no-print">
+      <div class="card-header"><h3>⚙ Digest Settings</h3><span class="sub">customize what appears in the digest</span></div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px;">
+        <label><div style="font-size:11px;color:var(--text-dim);margin-bottom:4px;">Period</div>
+          <select id="dg-period" class="input" style="width:100%;">
+            <option value="yesterday" ${cfg.period==='yesterday'?'selected':''}>Yesterday</option>
+            <option value="7d" ${cfg.period==='7d'?'selected':''}>Last 7 days</option>
+            <option value="28d" ${cfg.period==='28d'?'selected':''}>Last 28 days</option>
+            <option value="mtd" ${cfg.period==='mtd'?'selected':''}>Month to date</option>
+            <option value="qtd" ${cfg.period==='qtd'?'selected':''}>Quarter to date (90d)</option>
+            <option value="ytd" ${cfg.period==='ytd'?'selected':''}>Year to date</option>
+            <option value="custom" ${cfg.period==='custom'?'selected':''}>Custom date…</option>
+          </select>
+        </label>
+        ${cfg.period==='custom' ? `<label><div style="font-size:11px;color:var(--text-dim);margin-bottom:4px;">Date</div><input type="date" id="dg-date" class="input" style="width:100%;" value="${cfg.date}"></label>` : '<div></div>'}
+        <label><div style="font-size:11px;color:var(--text-dim);margin-bottom:4px;">Compare to</div>
+          <select id="dg-compare" class="input" style="width:100%;">
+            <option value="prev" ${cfg.compare==='prev'?'selected':''}>Previous period</option>
+            <option value="yoy" ${cfg.compare==='yoy'?'selected':''}>Same period last year</option>
+            <option value="none" ${cfg.compare==='none'?'selected':''}>No comparison</option>
+          </select>
+        </label>
+        <div style="display:flex;gap:8px;align-items:flex-end;">
+          <button class="btn btn-sm btn-primary" id="dg-apply">Apply</button>
+          <button class="btn btn-sm" onclick="window.print()">🖨 Print/PDF</button>
+          <button class="btn btn-sm" id="dg-copy">📋 Copy</button>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text-dim);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.06em;">Sections to include</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;font-size:12px;">
+        ${Object.entries({glance:'At a Glance', winners:'Winners', losers:'Losers', breakouts:'Breakouts', alerts:'Alerts', revenue:'Revenue', queries:'Queries', seowins:'SEO Wins', authors:'Authors', categories:'Categories', sources:'Sources', landing:'Landing Pages', geo:'Geography', devices:'Devices', publishing:'Publishing', actions:'Action Items'}).map(([k,lbl])=>`<label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" data-dg-sec="${k}" ${cfg.sections[k]?'checked':''}> ${lbl}</label>`).join('')}
+      </div>
+    </div>`;
+
+  el.innerHTML = infoBox('daily-digest') + controls + '<div class="loading">Building digest…</div>';
+
+  const wire = () => {
+    $('#dg-period')?.addEventListener('change', e => { cfg.period = e.target.value; });
+    $('#dg-compare')?.addEventListener('change', e => { cfg.compare = e.target.value; });
+    $('#dg-date')?.addEventListener('change', e => { cfg.date = e.target.value; });
+    $$('[data-dg-sec]').forEach(cb => cb.addEventListener('change', () => { cfg.sections[cb.dataset.dgSec] = cb.checked; }));
+    $('#dg-apply')?.addEventListener('click', () => { localStorage.setItem('tff_digest_cfg', JSON.stringify(cfg)); renderDailyDigest(); });
+    $('#dg-copy')?.addEventListener('click', () => {
+      const text = $('#digest-body')?.innerText || '';
+      navigator.clipboard?.writeText(text).then(()=>{ const b=$('#dg-copy'); b.textContent='✓ Copied'; setTimeout(()=>b.textContent='📋 Copy',1500); });
+    });
+  };
+  wire();
+
+  try {
+    const [digest, overview, movers, queries, anomalies, sources, geo, devices, authors, categories, landing, articlesAll, series] = await Promise.all([
+      apiSafe(`/api/daily-digest?date=${cfg.date}&range=${range}${compareQ}`),
+      apiSafe(`/api/overview?range=${range}${compareQ}`),
+      apiSafe(`/api/movers?range=${range}${compareQ}`),
+      apiSafe(`/api/queries?range=${range}&limit=20${compareQ}`),
+      apiSafe(`/api/anomalies?range=7d`),
+      apiSafe(`/api/sources?range=${range}`),
+      apiSafe(`/api/geo?range=${range}`),
+      apiSafe(`/api/devices?range=${range}`),
+      apiSafe(`/api/authors?range=${range}`),
+      apiSafe(`/api/categories?range=${range}`),
+      apiSafe(`/api/landing-pages?range=${range}&limit=10`),
+      apiSafe(`/api/articles?range=${range}&limit=30`),
+      apiSafe(`/api/timeseries?range=${range}`),
+    ]);
+
+    const d = digest?.data || digest || {};
+    const cur = d.headline || overview?.current || {};
+    const prev = overview?.previous || {};
+    const rpm = STATE.rpmOverride || {tier1:9, tier2:3.5, tier3:0.8};
+    const t1List = ['United States','United Kingdom','Canada','Australia','New Zealand','Ireland'];
+    const t2List = ['Germany','France','Netherlands','Sweden','Norway','Denmark','Japan','Singapore','Switzerland','Austria','Belgium','Finland'];
+    const t1pv = (geo?.countries||[]).filter(g => t1List.includes(g.country)).reduce((s,g)=>s+(g.pageviews||0),0);
+    const t2pv = (geo?.countries||[]).filter(g => t2List.includes(g.country)).reduce((s,g)=>s+(g.pageviews||0),0);
+    const t3pv = Math.max((cur.pageviews||0) - t1pv - t2pv, 0);
+    const estRev = d.headline?.estRevenue ?? ((t1pv/1000*rpm.tier1) + (t2pv/1000*rpm.tier2) + (t3pv/1000*rpm.tier3));
+    const prevRev = prev.pageviews ? (prev.pageviews/1000)*(rpm.tier1*0.4+rpm.tier2*0.2+rpm.tier3*0.4) : estRev*0.95;
+
+    const winners = d.winners || (movers?.rising||[]).slice(0,8);
+    const losers = d.losers || (movers?.falling||[]).slice(0,8);
+    const breakouts = d.breakouts || (movers?.rising||[]).filter(m=>m.previous>=3 && m.current>=m.previous*3).slice(0,5);
+    const alerts = d.seoAlerts || (anomalies?.anomalies||[]).filter(a=>a.severity!=='info').slice(0,8);
+
+    const periodLabel = {yesterday:'Yesterday', '7d':'Last 7 Days', '28d':'Last 28 Days', mtd:'Month to Date', qtd:'Quarter to Date', ytd:'Year to Date', custom:`on ${cfg.date}`}[cfg.period];
+    const deltaChip = (curV, prevV) => { const dlt = fmt.delta(curV||0, prevV||0); return cfg.compare!=='none' ? `<span class="mc-delta ${dlt.dir}" style="display:inline-block;margin-left:6px;">${dlt.sym} ${dlt.pct.toFixed(1)}%</span>` : ''; };
+
+    const S = cfg.sections;
+    const sec = (key, html) => S[key] ? html : '';
+
+    const qs = queries?.queries || [];
+    const risingQueries = qs.map(q => ({...q, deltaPct: q.previousClicks ? ((q.clicks||0)-q.previousClicks)/Math.max(q.previousClicks,1)*100 : 0})).filter(q=>q.deltaPct>10).sort((a,b)=>b.deltaPct-a.deltaPct).slice(0,6);
+    const seoOpps = qs.filter(q => (q.position||99)>=4 && (q.position||99)<=15 && (q.impressions||0)>20).sort((a,b)=>(b.impressions||0)-(a.impressions||0)).slice(0,6);
+
+    const digestHtml = `
+      <div class="digest-page" id="digest-body">
+        <div class="digest-head">
+          <h2>The Front Feed · Executive Digest</h2>
+          <div class="digest-date">${periodLabel} · ${new Date().toLocaleDateString('en-US',{weekday:'long', year:'numeric', month:'long', day:'numeric'})}</div>
+        </div>
+
+        ${sec('glance', `
+        <div class="digest-section">
+          <h3>📊 At a Glance</h3>
+          <div class="grid grid-4">
+            <div class="mini-card"><div class="mc-label">Pageviews</div><div class="mc-value">${fmt.full(cur.pageviews||0)}</div>${deltaChip(cur.pageviews, prev.pageviews)}</div>
+            <div class="mini-card"><div class="mc-label">Users</div><div class="mc-value">${fmt.full(cur.users||0)}</div>${deltaChip(cur.users, prev.users)}</div>
+            <div class="mini-card"><div class="mc-label">Sessions</div><div class="mc-value">${fmt.full(cur.sessions||0)}</div>${deltaChip(cur.sessions, prev.sessions)}</div>
+            <div class="mini-card"><div class="mc-label">New Users</div><div class="mc-value">${fmt.full(cur.newUsers||0)}</div>${deltaChip(cur.newUsers, prev.newUsers)}</div>
+          </div>
+          <div class="grid grid-4" style="margin-top:10px;">
+            <div class="mini-card"><div class="mc-label">Engagement</div><div class="mc-value">${((cur.engagementRate||0)*100).toFixed(1)}%</div></div>
+            <div class="mini-card"><div class="mc-label">Bounce</div><div class="mc-value">${((cur.bounceRate||0)*100).toFixed(1)}%</div></div>
+            <div class="mini-card"><div class="mc-label">Avg. Session</div><div class="mc-value">${fmt.dur(cur.avgDuration||0)}</div></div>
+            <div class="mini-card"><div class="mc-label">Pages/Session</div><div class="mc-value">${(cur.pagesPerSession||0).toFixed(2)}</div></div>
+          </div>
+        </div>`)}
+
+        ${sec('revenue', `
+        <div class="digest-section">
+          <h3>💰 Revenue Snapshot</h3>
+          <div class="grid grid-4">
+            <div class="mini-card"><div class="mc-label">Est. Revenue</div><div class="mc-value" style="color:var(--green);">$${fmt.num(estRev)}</div>${deltaChip(estRev, prevRev)}</div>
+            <div class="mini-card"><div class="mc-label">Blended RPM</div><div class="mc-value">$${((cur.pageviews||0)?estRev/((cur.pageviews||1)/1000):0).toFixed(2)}</div></div>
+            <div class="mini-card"><div class="mc-label">Tier-1 Share</div><div class="mc-value">${((t1pv/Math.max(cur.pageviews||1,1))*100).toFixed(0)}%</div></div>
+            <div class="mini-card"><div class="mc-label">Projected /mo</div><div class="mc-value">$${fmt.num(estRev / Math.max(1,(series?.series||[]).length||1) * 30)}</div></div>
+          </div>
+          <div style="margin-top:8px;font-size:11px;color:var(--text-dim);">T1 ($${rpm.tier1}) ${fmt.num(t1pv)} pv · T2 ($${rpm.tier2}) ${fmt.num(t2pv)} pv · T3 ($${rpm.tier3}) ${fmt.num(t3pv)} pv</div>
+        </div>`)}
+
+        ${sec('winners', `
+        <div class="digest-section">
+          <h3>↑ Biggest Winners</h3>
+          ${winners.length ? winners.map(w=>`<div class="intel-item"><strong>${fmt.safe((w.title||w.pagePath||w.path||'').slice(0,100))}</strong><div class="intel-sub"><span style="color:var(--green);">+${((w.deltaPct)||((w.current-w.previous)/Math.max(w.previous,1)*100)).toFixed(0)}%</span> · ${fmt.num(w.pageviews||w.current||0)} pv</div></div>`).join('') : '<div class="empty-sm">No major risers</div>'}
+        </div>`)}
+
+        ${sec('losers', `
+        <div class="digest-section">
+          <h3>↓ Losing Steam</h3>
+          ${losers.length ? losers.map(l=>`<div class="intel-item"><strong>${fmt.safe((l.title||l.pagePath||l.path||'').slice(0,100))}</strong><div class="intel-sub"><span style="color:var(--accent);">${((l.deltaPct)||((l.current-l.previous)/Math.max(l.previous,1)*100)).toFixed(0)}%</span> · ${fmt.num(l.pageviews||l.current||0)} pv</div></div>`).join('') : '<div class="empty-sm">Nothing worrying</div>'}
+        </div>`)}
+
+        ${sec('breakouts', breakouts.length ? `<div class="digest-section"><h3>💥 Breakout Articles</h3>${breakouts.map(b=>`<div class="intel-item"><strong>${fmt.safe((b.title||b.pagePath||b.path||'').slice(0,100))}</strong><div class="intel-sub">${fmt.num(b.pageviews||b.current||0)} pv · ${b.previous?((b.current/Math.max(b.previous,1)).toFixed(1)+'× prev'):'new'}</div></div>`).join('')}</div>`:'')}
+
+        ${sec('alerts', alerts.length ? `<div class="digest-section"><h3>🚨 Urgent Alerts</h3>${alerts.map(a=>`<div class="intel-item"><span class="anom-badge ${a.severity||'warn'}">${a.type||'alert'}</span> ${fmt.safe(a.title||a.query||a.pagePath||'')}<div class="intel-sub">${a.deltaPct?(a.deltaPct>0?'+':'')+a.deltaPct.toFixed(0)+'%':''}</div></div>`).join('')}</div>`:'')}
+
+        ${sec('queries', `
+        <div class="digest-section">
+          <h3>🔍 Top Search Queries</h3>
+          ${qs.length ? `<table style="width:100%;font-size:12px;"><tr style="color:var(--text-dim);text-align:left;"><th style="padding:4px 8px;">Query</th><th style="padding:4px 8px;text-align:right;">Clicks</th><th style="padding:4px 8px;text-align:right;">Impr.</th><th style="padding:4px 8px;text-align:right;">CTR</th><th style="padding:4px 8px;text-align:right;">Pos.</th></tr>${qs.slice(0,15).map(q=>`<tr><td style="padding:4px 8px;">${fmt.safe(q.query)}</td><td style="padding:4px 8px;text-align:right;font-family:'JetBrains Mono',monospace;">${fmt.full(q.clicks)}</td><td style="padding:4px 8px;text-align:right;font-family:'JetBrains Mono',monospace;">${fmt.full(q.impressions)}</td><td style="padding:4px 8px;text-align:right;">${((q.ctr||0)*100).toFixed(1)}%</td><td style="padding:4px 8px;text-align:right;" class="${fmt.posClass(q.position)}">${fmt.pos(q.position)}</td></tr>`).join('')}</table>` : '<div class="empty-sm">No search data</div>'}
+        </div>`)}
+
+        ${sec('seowins', risingQueries.length||seoOpps.length ? `
+        <div class="digest-section">
+          <h3>🎯 SEO Wins & Opportunities</h3>
+          <div class="grid grid-2">
+            <div><h4 style="font-size:12px;color:var(--text-dim);margin-bottom:6px;">Rising Queries</h4>${risingQueries.length ? risingQueries.map(q=>`<div class="intel-item">${fmt.safe(q.query)} <span style="color:var(--green);">+${q.deltaPct.toFixed(0)}%</span></div>`).join('') : '<div class="empty-sm">None</div>'}</div>
+            <div><h4 style="font-size:12px;color:var(--text-dim);margin-bottom:6px;">Near Page-1 (push into top 3)</h4>${seoOpps.length ? seoOpps.map(q=>`<div class="intel-item">${fmt.safe(q.query)} <span style="color:var(--amber);">#${(q.position||0).toFixed(0)}</span> · ${fmt.num(q.impressions)}i</div>`).join('') : '<div class="empty-sm">None</div>'}</div>
+          </div>
+        </div>`:'')}
+
+        ${sec('authors', (authors?.authors||[]).length ? (()=>{
+          // Fallback: count articles per author from articlesAll if worker returns 0
+          const articleCountByAuthor = {};
+          (articlesAll?.articles||[]).forEach(a => {
+            const name = a.author || a.authorName || '';
+            if (!name) return;
+            articleCountByAuthor[name] = (articleCountByAuthor[name]||0) + 1;
+          });
+          return `<div class="digest-section"><h3>✍ Top Authors</h3><table style="width:100%;font-size:12px;"><tr style="color:var(--text-dim);text-align:left;"><th style="padding:4px 8px;">Author</th><th style="padding:4px 8px;text-align:right;">Articles</th><th style="padding:4px 8px;text-align:right;">Pageviews</th><th style="padding:4px 8px;text-align:right;">Avg/Article</th></tr>${(authors.authors||[]).slice(0,8).map(a=>{
+            const name = a.author||a.name||'';
+            const articleCount = a.articles || articleCountByAuthor[name] || 0;
+            return `<tr><td style="padding:4px 8px;">${fmt.safe(name)}</td><td style="padding:4px 8px;text-align:right;font-family:'JetBrains Mono',monospace;">${fmt.full(articleCount)}</td><td style="padding:4px 8px;text-align:right;font-family:'JetBrains Mono',monospace;">${fmt.full(a.pageviews||0)}</td><td style="padding:4px 8px;text-align:right;font-family:'JetBrains Mono',monospace;">${fmt.num((a.pageviews||0)/Math.max(articleCount||1,1))}</td></tr>`;
+          }).join('')}</table></div>`;
+        })():'')}
+
+        ${sec('categories', (categories?.categories||[]).length ? `<div class="digest-section"><h3>🏷 Categories</h3>${(categories.categories||[]).slice(0,6).map(c=>{const tot=(categories.categories||[]).reduce((a,b)=>a+(b.pageviews||0),0)||1;const pct=((c.pageviews||0)/tot*100).toFixed(0);return `<div class="intel-item"><strong>${fmt.safe(c.category)}</strong> — ${fmt.num(c.pageviews||0)} pv (${pct}%)<div style="height:4px;background:var(--bg-elev-2);border-radius:2px;margin-top:4px;overflow:hidden;"><div style="width:${pct}%;height:100%;background:var(--accent);"></div></div></div>`;}).join('')}</div>`:'')}
+
+        ${sec('sources', (sources?.byChannel||sources?.sources||[]).length ? `<div class="digest-section"><h3>📡 Traffic Sources</h3>${(sources.byChannel||[]).slice(0,8).map(s=>{const tot=(sources.byChannel||[]).reduce((a,b)=>a+(b.sessions||0),0)||1;const pct=((s.sessions||0)/tot*100).toFixed(0);return `<div class="intel-item"><strong>${fmt.safe(s.channel)}</strong> — ${fmt.num(s.sessions||0)} sessions (${pct}%)</div>`;}).join('')}</div>`:'')}
+
+        ${sec('landing', (landing?.pages||landing?.data||[]).length ? `<div class="digest-section"><h3>🛬 Top Landing Pages</h3>${(landing.pages||landing.data||[]).slice(0,8).map(p=>`<div class="intel-item"><strong>${fmt.safe((p.path||p.pagePath||'').slice(0,100))}</strong><div class="intel-sub">${fmt.num(p.entrances||p.sessions||0)} entrances · ${((p.bounceRate||0)*100).toFixed(0)}% bounce</div></div>`).join('')}</div>`:'')}
+
+        ${sec('geo', (geo?.countries||[]).length ? `<div class="digest-section"><h3>🌍 Geography</h3><div class="grid grid-2"><div><h4 style="font-size:12px;color:var(--text-dim);margin-bottom:6px;">Top Countries</h4>${(geo.countries||[]).slice(0,10).map((g,i)=>{const pct=((g.pageviews||0)/Math.max(cur.pageviews||1,1)*100).toFixed(0);return `<div class="intel-item"><strong>${i+1}. ${fmt.safe(g.country)}</strong> — ${fmt.num(g.pageviews||0)} pv (${pct}%)</div>`;}).join('')}</div><div><h4 style="font-size:12px;color:var(--text-dim);margin-bottom:6px;">Tier Split</h4><div class="intel-item"><strong>Tier 1 (US/UK/CA/AU/NZ/IE):</strong> ${fmt.num(t1pv)} pv</div><div class="intel-item"><strong>Tier 2 (EU/JP/SG):</strong> ${fmt.num(t2pv)} pv</div><div class="intel-item"><strong>Tier 3 (other):</strong> ${fmt.num(t3pv)} pv</div></div></div></div>`:'')}
+
+        ${sec('devices', (devices?.devices||[]).length ? `<div class="digest-section"><h3>📱 Devices</h3>${(devices.devices||[]).map(dv=>{const tot=(devices.devices||[]).reduce((a,b)=>a+(b.pageviews||b.sessions||0),0)||1;const v=dv.pageviews||dv.sessions||0;const pct=(v/tot*100).toFixed(0);return `<div class="intel-item"><strong>${deviceIcon(dv.device)} ${fmt.safe(dv.device)}</strong> — ${fmt.num(v)} (${pct}%)<div style="height:4px;background:var(--bg-elev-2);border-radius:2px;margin-top:4px;overflow:hidden;"><div style="width:${pct}%;height:100%;background:var(--accent);"></div></div></div>`;}).join('')}</div>`:'')}
+
+        ${sec('publishing', (articlesAll?.articles||[]).length ? (()=>{const arts=articlesAll.articles||[];const fresh=arts.filter(a=>fmt.daysAgo(a.date)<=7).length;const green=arts.filter(a=>fmt.daysAgo(a.date)>=30 && (a.pageviews||0)>=50).length;const avgPv=arts.length?arts.reduce((a,b)=>a+(b.pageviews||0),0)/arts.length:0;const topAgeBucket=arts.reduce((acc,a)=>{const d=fmt.daysAgo(a.date);const k=d<=1?'0-1d':d<=7?'2-7d':d<=30?'8-30d':d<=90?'31-90d':'90d+';acc[k]=(acc[k]||0)+(a.pageviews||0);return acc;},{});return `<div class="digest-section"><h3>📝 Publishing Insights</h3><div class="grid grid-4"><div class="mini-card"><div class="mc-label">Articles in period</div><div class="mc-value">${arts.length}</div></div><div class="mini-card"><div class="mc-label">Fresh (≤7d)</div><div class="mc-value">${fresh}</div></div><div class="mini-card"><div class="mc-label">Evergreen (30d+, 50+ pv)</div><div class="mc-value">${green}</div></div><div class="mini-card"><div class="mc-label">Avg pageviews</div><div class="mc-value">${fmt.num(avgPv)}</div></div></div><div style="margin-top:10px;"><h4 style="font-size:12px;color:var(--text-dim);margin-bottom:6px;">Pageviews by article age</h4>${Object.entries(topAgeBucket).sort((a,b)=>b[1]-a[1]).map(([k,v])=>{const tot=Object.values(topAgeBucket).reduce((a,b)=>a+b,0)||1;const pct=(v/tot*100).toFixed(0);return `<div class="intel-item"><strong>${k}:</strong> ${fmt.num(v)} pv (${pct}%)</div>`;}).join('')}</div></div>`;})() : '')}
+
+        ${sec('actions', (()=>{const items=d.actionItems||[];const auto=[];if(losers.length) auto.push(`Investigate ${losers.length} losing articles — ${fmt.safe((losers[0].title||losers[0].path||'').slice(0,60))} fell ${((losers[0].deltaPct)||((losers[0].current-losers[0].previous)/Math.max(losers[0].previous,1)*100)).toFixed(0)}%`);if(seoOpps.length) auto.push(`Push ${seoOpps.length} near-page-1 queries into top 3 (biggest: "${fmt.safe(seoOpps[0].query)}" at position ${(seoOpps[0].position||0).toFixed(0)})`);if(breakouts.length) auto.push(`Capitalize on breakout: "${fmt.safe((breakouts[0].title||breakouts[0].path||'').slice(0,60))}" — consider follow-up content`);if(alerts.length) auto.push(`Resolve ${alerts.length} urgent alerts in Anomalies view`);const all=[...items, ...auto];return all.length?`<div class="digest-section"><h3>📝 Recommended Actions</h3><ol style="margin-left:18px;">${all.map(i=>`<li style="margin-bottom:6px;">${fmt.safe(i)}</li>`).join('')}</ol></div>`:'';})())}
+
+        <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:20px;color:var(--text-dim);font-size:11px;">Generated by TFF Analytics · ${new Date().toLocaleString()} · Period: ${periodLabel} · Compare: ${cfg.compare}</div>
+      </div>`;
+
+    $('#view-daily-digest').innerHTML = infoBox('daily-digest') + controls + digestHtml;
+    wire();
+  } catch(e) {
+    $('#view-daily-digest').innerHTML = infoBox('daily-digest') + controls + `<div class="error">Failed to build digest: ${fmt.safe(e.message)}</div>`;
+    wire();
+  }
+}
+
+// ── Anomalies & Alerts ─────────────────────────────────────
+async function renderAnomalies() {
+  const el = $('#view-anomalies');
+  el.innerHTML = infoBox('anomalies') + '<div class="loading">Scanning for anomalies…</div>';
+
+  const tab = STATE.chipFilter['anom-tab'] || 'live';
+  const [anomaliesRes, rulesRes] = await Promise.all([
+    apiSafe(`/api/anomalies?${rangeParam()}`),
+    apiSafe('/api/alert-rules'),
+  ]);
+  const anomalies = anomaliesRes?.anomalies || anomaliesRes?.data?.anomalies || [];
+  const rules = rulesRes?.rules || rulesRes?.data?.rules || JSON.parse(localStorage.getItem('tff_local_rules')||'[]');
+
+  const tabs = `<div class="tab-bar">
+    <button class="tab-btn ${tab==='live'?'active':''}" data-chip="anom-tab|live">Live Anomalies (${anomalies.length})</button>
+    <button class="tab-btn ${tab==='rules'?'active':''}" data-chip="anom-tab|rules">Rules (${rules.length})</button>
+  </div>`;
+
+  let content = '';
+  if (tab === 'live') {
+    const summary = anomaliesRes?.summary || {crit:0, warn:0, info:0};
+    content = `
+      <div class="grid grid-4 mb-16">
+        <div class="mini-card"><div class="mc-label">Critical</div><div class="mc-value" style="color:var(--accent);">${summary.crit||anomalies.filter(a=>a.severity==='crit').length}</div></div>
+        <div class="mini-card"><div class="mc-label">Warning</div><div class="mc-value" style="color:var(--amber);">${summary.warn||anomalies.filter(a=>a.severity==='warn').length}</div></div>
+        <div class="mini-card"><div class="mc-label">Info</div><div class="mc-value" style="color:var(--blue);">${summary.info||anomalies.filter(a=>a.severity==='info').length}</div></div>
+        <div class="mini-card"><div class="mc-label">Total</div><div class="mc-value">${anomalies.length}</div></div>
+      </div>
+      ${anomalies.length ? makeTable({
+        id:'anomalies', title:'Detected Anomalies', data: anomalies.map(a=>({...a, severityLabel:a.severity})),
+        defaultSort:'firstSeen', defaultSortDir:'desc',
+        columns:[
+          {key:'severity',label:'Level',render:a=>`<span class="anom-badge ${a.severity}">${a.severity}</span>`},
+          {key:'type',label:'Type',render:a=>fmt.safe(a.type||'')},
+          {key:'title',label:'Target',render:a=>`<div class="title-text">${fmt.safe(a.title||a.pagePath||a.query||'—')}</div>`},
+          {key:'baseline',label:'Baseline',num:true,fmt:fmt.num},
+          {key:'observed',label:'Observed',num:true,fmt:fmt.num},
+          {key:'deltaPct',label:'Δ %',num:true,render:a=>a.deltaPct!=null?`<span style="color:${a.deltaPct>=0?'var(--green)':'var(--accent)'}">${a.deltaPct>=0?'+':''}${a.deltaPct.toFixed(0)}%</span>`:'—'},
+          {key:'firstSeen',label:'First Seen',render:a=>fmt.dateTime(a.firstSeen)},
+        ],
+      }) : `<div class="empty" style="padding:40px;">No anomalies detected in this range.<br><span style="font-size:11px;">Requires /api/anomalies endpoint (see Worker Endpoint Spec).</span></div>`}
+    `;
+  } else {
+    content = `
+      <div class="card mb-16">
+        <div class="card-header"><h3>Alert Rules</h3><button class="btn btn-sm btn-primary" id="new-rule-btn">+ New Rule</button></div>
+        ${rules.length ? rules.map(r=>`
+          <div class="alert-rule">
+            <div>
+              <div class="ar-title">${fmt.safe(r.name)} ${r.enabled?'<span class="anom-badge good">on</span>':'<span class="anom-badge warn">paused</span>'}</div>
+              <div class="ar-sub">When <strong>${fmt.safe(r.metric)}</strong> (${fmt.safe(r.scope)}) ${fmt.safe(r.condition)} by ${r.threshold}${r.condition?.includes('pct')?'%':''} over ${r.window||'7d'} → ${(r.destinations||[]).map(d=>d.type).join(', ')||'dashboard'}</div>
+            </div>
+            <div><button class="btn btn-sm" data-rule-del="${r.id}">Delete</button></div>
+          </div>`).join('') : '<div class="empty-sm" style="padding:20px;">No rules yet. Click "New Rule" to create one.</div>'}
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>Example Rule Templates</h3></div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          ${['Any article drops >40% pageviews vs 7d avg','Query position drops ≥3 ranks with >100 impressions','New article exceeds 3× baseline in first 24h','Site-wide CTR drops >30% vs 28d baseline'].map(t=>`<button class="btn btn-sm" style="text-align:left;" data-rule-tpl="${fmt.safe(t)}">+ ${t}</button>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  el.innerHTML = infoBox('anomalies') + tabs + content;
+
+  if (tab==='rules') {
+    $('#new-rule-btn')?.addEventListener('click', () => {
+      const name = prompt('Rule name:'); if (!name) return;
+      const metric = prompt('Metric (pageviews, clicks, position, ctr):', 'pageviews') || 'pageviews';
+      const condition = prompt('Condition (drop_pct, spike_pct, position_drop):', 'drop_pct') || 'drop_pct';
+      const threshold = parseFloat(prompt('Threshold (e.g. 40 for 40%):', '40') || '40');
+      const window = prompt('Window (7d, 28d):', '7d') || '7d';
+      const rule = {id:'r_'+Date.now(), name, metric, scope:'article', condition, threshold, window, enabled:true, createdAt:new Date().toISOString()};
+      const local = JSON.parse(localStorage.getItem('tff_local_rules')||'[]');
+      local.push(rule);
+      localStorage.setItem('tff_local_rules', JSON.stringify(local));
+      apiSafe('/api/alert-rules', {ttl:0}); // best effort; worker save handled separately if endpoint exists
+      renderView('anomalies');
+    });
+    $$('[data-rule-del]').forEach(b => b.addEventListener('click', () => {
+      const id = b.dataset.ruleDel;
+      const local = JSON.parse(localStorage.getItem('tff_local_rules')||'[]').filter(r=>r.id!==id);
+      localStorage.setItem('tff_local_rules', JSON.stringify(local));
+      renderView('anomalies');
+    }));
+    $$('[data-rule-tpl]').forEach(b => b.addEventListener('click', () => {
+      const name = b.dataset.ruleTpl;
+      const rule = {id:'r_'+Date.now(), name, metric:'pageviews', scope:'article', condition:'drop_pct', threshold:40, window:'7d', enabled:true, createdAt:new Date().toISOString()};
+      const local = JSON.parse(localStorage.getItem('tff_local_rules')||'[]');
+      local.push(rule);
+      localStorage.setItem('tff_local_rules', JSON.stringify(local));
+      renderView('anomalies');
+    }));
+  }
+}
+
+// ── Content ROI ────────────────────────────────────────────
+async function renderContentROI() {
+  const el = $('#view-content-roi');
+  el.innerHTML = infoBox('content-roi') + '<div class="loading">Computing ROI…</div>';
+
+  const [articles, roiData] = await Promise.all([
+    getArticlesWithMovers(),
+    apiSafe(`/api/content-roi?range=90d&hoursPerArticle=${STATE.hoursPerArticle}`),
+  ]);
+  const roiByPath = {};
+  (roiData?.articles || roiData?.data?.articles || []).forEach(a => { roiByPath[a.pagePath||a.path] = a; });
+
+  const rpm = STATE.rpmOverride || {tier1:9, tier2:3.5, tier3:0.8};
+  const hourlyRate = STATE.hourlyRate;
+  const hours = STATE.hoursPerArticle;
+
+  const rows = articles.map(a => {
+    const server = roiByPath[a.path] || {};
+    const daysOld = a.daysOld || 1;
+    const estRev = server.estRevenue ?? (a.pageviews/1000 * (rpm.tier1*0.4 + rpm.tier2*0.2 + rpm.tier3*0.4));
+    const revPerDay = estRev / Math.max(daysOld, 1);
+    const revPer1k = a.wordCount ? estRev / (a.wordCount/1000) : 0;
+    const cost = hours * hourlyRate;
+    const roi = cost > 0 ? (estRev - cost) / cost : 0;
+    const evergreenScore = (a.pageviews && daysOld>=30) ? (a.pageviews / Math.max(a.wordCount||500, 1)) * Math.min(daysOld/30, 6) : 0;
+    return {...a, estRevenue:estRev, revPerDay, revPer1k, cost, roi, evergreenScore};
+  });
+
+  STATE.exports['content-roi'] = rows.map(r=>({title:r.titleClean, path:r.path, words:r.wordCount, pageviews:r.pageviews, daysOld:r.daysOld, estRevenue:r.estRevenue?.toFixed(2), revPerDay:r.revPerDay?.toFixed(2), revPer1k:r.revPer1k?.toFixed(2), roi:(r.roi*100)?.toFixed(1)+'%', evergreenScore:r.evergreenScore?.toFixed(1)}));
+
+  el.innerHTML = infoBox('content-roi') + `
+    <div class="grid grid-4 mb-16">
+      <div class="mini-card"><div class="mc-label">Articles</div><div class="mc-value">${fmt.full(rows.length)}</div></div>
+      <div class="mini-card"><div class="mc-label">Total Est. Revenue</div><div class="mc-value" style="color:var(--green);">$${fmt.num(rows.reduce((s,r)=>s+(r.estRevenue||0),0))}</div></div>
+      <div class="mini-card"><div class="mc-label">Avg. Revenue / Article</div><div class="mc-value">$${fmt.num(rows.reduce((s,r)=>s+(r.estRevenue||0),0)/Math.max(rows.length,1))}</div></div>
+      <div class="mini-card"><div class="mc-label">Avg. ROI</div><div class="mc-value">${(rows.reduce((s,r)=>s+(r.roi||0),0)/Math.max(rows.length,1)*100).toFixed(0)}%</div></div>
+    </div>
+    <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px;">Assumes ${hours}h per article @ $${hourlyRate}/hr (editable in Settings) · RPM T1 $${rpm.tier1} / T2 $${rpm.tier2} / T3 $${rpm.tier3}</div>
+    ${makeTable({
+      id:'content-roi', title:'Content ROI Leaderboard', subtitle:'Sorted by total estimated revenue',
+      data:rows, defaultSort:'estRevenue', defaultSortDir:'desc', exportName:'content-roi', onRowClick:true,
+      searchKeys:['titleClean','catDisplay'],
+      columns:[
+        {key:'titleClean',label:'Article',render:a=>`<div class="title-cell">${a.featuredImage?`<img class="thumb" src="${fmt.safe(a.featuredImage)}" loading="lazy">`:'<div class="thumb"></div>'}<div><div class="title-text">${a.titleClean}</div><div style="font-size:11px;color:var(--text-dim);margin-top:2px;">${(a.daysOld||0)}d · ${fmt.full(a.wordCount||0)} words</div></div></div>`},
+        {key:'pageviews',label:'Pageviews',num:true,fmt:fmt.full},
+        {key:'estRevenue',label:'Est. Revenue',num:true,render:r=>`<span style="color:var(--green);font-weight:600;">$${fmt.num(r.estRevenue)}</span>`},
+        {key:'revPerDay',label:'$ / Day',num:true,render:r=>`$${(r.revPerDay||0).toFixed(2)}`},
+        {key:'revPer1k',label:'$ / 1k words',num:true,render:r=>r.wordCount?`$${(r.revPer1k||0).toFixed(2)}`:'—'},
+        {key:'roi',label:'ROI',num:true,render:r=>`<span style="color:${r.roi>=1?'var(--green)':r.roi>=0?'var(--amber)':'var(--accent)'}">${(r.roi*100).toFixed(0)}%</span>`},
+        {key:'evergreenScore',label:'Evergreen',num:true,fmt:v=>v?v.toFixed(1):'—'},
+      ],
+    })}`;
+}
+
+// ── Referrers ─────────────────────────────────────────────
+async function renderReferrers() {
+  const el = $('#view-referrers');
+  el.innerHTML = infoBox('referrers') + '<div class="loading">Loading referrers…</div>';
+  const data = await apiSafe(`/api/referrers?${rangeParam()}`);
+  const refs = data?.referrers || data?.data?.referrers || [];
+  if (!refs.length) {
+    el.innerHTML = infoBox('referrers') + `<div class="empty" style="padding:40px;">No referrer data available.<br><span style="font-size:11px;">Requires /api/referrers endpoint (see Worker Endpoint Spec).</span></div>`;
+    return;
+  }
+  STATE.exports['referrers'] = refs;
+  el.innerHTML = infoBox('referrers') + `
+    <div class="grid grid-4 mb-16">
+      <div class="mini-card"><div class="mc-label">Referring Domains</div><div class="mc-value">${fmt.full(new Set(refs.map(r=>r.domain)).size)}</div></div>
+      <div class="mini-card"><div class="mc-label">Total Sessions</div><div class="mc-value">${fmt.num(refs.reduce((s,r)=>s+(r.sessions||0),0))}</div></div>
+      <div class="mini-card"><div class="mc-label">Avg. Engagement</div><div class="mc-value">${((refs.reduce((s,r)=>s+(r.engagementRate||0),0)/Math.max(refs.length,1))*100).toFixed(0)}%</div></div>
+      <div class="mini-card"><div class="mc-label">Avg. Bounce</div><div class="mc-value">${((refs.reduce((s,r)=>s+(r.bounceRate||0),0)/Math.max(refs.length,1))*100).toFixed(0)}%</div></div>
+    </div>
+    ${makeTable({
+      id:'referrers', title:'All Referrers', data:refs, defaultSort:'sessions', defaultSortDir:'desc',
+      exportName:'referrers', searchKeys:['domain','path'],
+      columns:[
+        {key:'domain',label:'Domain',render:r=>`<div class="title-text">${fmt.safe(r.domain||'(direct)')}</div>`},
+        {key:'path',label:'Path',render:r=>`<span style="color:var(--text-dim);font-size:11px;">${fmt.safe((r.path||'/').slice(0,60))}</span>`},
+        {key:'sessions',label:'Sessions',num:true,fmt:fmt.full},
+        {key:'pageviews',label:'Pageviews',num:true,fmt:fmt.full},
+        {key:'users',label:'Users',num:true,fmt:fmt.full},
+        {key:'bounceRate',label:'Bounce',num:true,fmt:v=>((v||0)*100).toFixed(0)+'%'},
+        {key:'engagementRate',label:'Engagement',num:true,fmt:v=>((v||0)*100).toFixed(0)+'%'},
+        {key:'avgSessionDuration',label:'Avg. Time',num:true,fmt:fmt.dur},
+      ],
+    })}`;
+}
+
+// ── Page Attribution ──────────────────────────────────────
+async function renderPageAttribution() {
+  const el = $('#view-page-attribution');
+  const selectedPath = STATE.filter['page-attr-path'] || '';
+  el.innerHTML = infoBox('page-attribution') + `
+    <div class="card mb-16">
+      <div class="card-header"><h3>Select an Article</h3><span class="sub">Type part of the path or title</span></div>
+      <input class="input" placeholder="e.g. /rihanna-baby or paste a full URL…" id="page-attr-input" value="${fmt.safe(selectedPath)}">
+      <div id="page-attr-suggestions" style="margin-top:8px;display:flex;flex-direction:column;gap:4px;max-height:200px;overflow-y:auto;"></div>
+    </div>
+    <div id="page-attr-body">${selectedPath?'<div class="loading">Loading attribution…</div>':'<div class="empty" style="padding:40px;">Search an article above to see its full attribution breakdown.</div>'}</div>
+  `;
+
+  const articles = await getArticlesWithMovers();
+  const input = $('#page-attr-input');
+  const sugg = $('#page-attr-suggestions');
+  function updateSugg() {
+    const q = input.value.toLowerCase().trim();
+    if (!q || q.length<2) { sugg.innerHTML=''; return; }
+    const matches = articles.filter(a => (a.path||'').toLowerCase().includes(q) || (a.titleClean||'').toLowerCase().includes(q)).slice(0,8);
+    sugg.innerHTML = matches.map(a=>`<div class="cmdk-item" data-path="${fmt.safe(a.path)}">${fmt.safe(a.titleClean)} <span class="cmdk-sub">${fmt.safe(a.path)}</span></div>`).join('');
+  }
+  input.addEventListener('input', updateSugg);
+  sugg.addEventListener('click', async e => {
+    const item = e.target.closest('[data-path]');
+    if (!item) return;
+    const path = item.dataset.path;
+    STATE.filter['page-attr-path'] = path;
+    input.value = path;
+    sugg.innerHTML = '';
+    await loadAttribution(path);
+  });
+
+  async function loadAttribution(path) {
+    const body = $('#page-attr-body');
+    body.innerHTML = '<div class="loading">Loading attribution…</div>';
+    const data = await apiSafe(`/api/page-attribution?pagePath=${encodeURIComponent(path)}&${rangeParam()}`)
+      .then(r => r?.data || r)
+      .catch(()=>null);
+    // Fallback: use /api/article if page-attribution endpoint not yet live
+    const fallback = !data ? await apiSafe(`/api/article?path=${encodeURIComponent(path)}&range=28d`) : null;
+    const info = data || fallback;
+    if (!info) { body.innerHTML = `<div class="error">Could not load attribution for ${fmt.safe(path)}</div>`; return; }
+
+    const channels = info.channels || [];
+    const refs = info.referrers || [];
+    const countries = info.countries || [];
+    const devices = info.devices || [];
+    const queries = info.queries || [];
+    const totals = info.totals || { pageviews: (info.timeseries||[]).reduce((s,t)=>s+t.pageviews,0) };
+
+    body.innerHTML = `
+      <div class="grid grid-4 mb-16">
+        <div class="mini-card"><div class="mc-label">Pageviews</div><div class="mc-value">${fmt.full(totals.pageviews||0)}</div></div>
+        <div class="mini-card"><div class="mc-label">Users</div><div class="mc-value">${fmt.full(totals.users||0)}</div></div>
+        <div class="mini-card"><div class="mc-label">Engagement</div><div class="mc-value">${((totals.engagementRate||0)*100).toFixed(0)}%</div></div>
+        <div class="mini-card"><div class="mc-label">Est. Revenue</div><div class="mc-value" style="color:var(--green);">$${fmt.num(totals.estRevenue||0)}</div></div>
+      </div>
+      <div class="grid grid-2 mb-16">
+        <div class="card"><div class="card-header"><h3>Channels</h3></div>
+          ${channels.length ? barList(channels.slice(0,8),'name','pageviews') : (info.sources?.length?barList(info.sources.slice(0,8),'source','sessions'):'<div class="empty-sm">No data</div>')}
+        </div>
+        <div class="card"><div class="card-header"><h3>Top Referrers</h3></div>
+          ${refs.length ? `<div class="bar-list">${refs.slice(0,10).map(r=>`<div class="bar-row"><div class="bar-fill" style="width:${(r.pageviews/Math.max(refs[0].pageviews,1))*100}%"></div><div class="bar-label">${fmt.safe(r.domain)}</div><div class="bar-val">${fmt.num(r.pageviews)}</div></div>`).join('')}</div>`:'<div class="empty-sm">No referrer data</div>'}
+        </div>
+      </div>
+      <div class="grid grid-2 mb-16">
+        <div class="card"><div class="card-header"><h3>Countries</h3></div>
+          ${countries.length ? `<div class="bar-list">${countries.slice(0,10).map(c=>`<div class="bar-row"><div class="bar-fill" style="width:${(c.pageviews/Math.max(countries[0].pageviews,1))*100}%"></div><div class="bar-label">${countryFlag(c.code)} ${fmt.safe(c.name||c.country)}</div><div class="bar-val">${fmt.num(c.pageviews||c.users||0)}</div></div>`).join('')}</div>`:'<div class="empty-sm">No data</div>'}
+        </div>
+        <div class="card"><div class="card-header"><h3>Devices</h3></div>
+          ${devices.length ? barList(devices.slice(0,5),'name','pageviews') : '<div class="empty-sm">No data</div>'}
+        </div>
+      </div>
+      <div class="card mb-16">
+        <div class="card-header"><h3>Ranking Search Queries</h3><span class="sub">${queries.length} queries</span></div>
+        ${queries.length ? `<div class="table-scroll"><table><thead><tr><th>Query</th><th class="num-head">Impr.</th><th class="num-head">Clicks</th><th class="num-head">CTR</th><th class="num-head">Pos.</th></tr></thead><tbody>${queries.slice(0,30).map(q=>`<tr><td>${fmt.safe(q.query)}</td><td class="num">${fmt.full(q.impressions)}</td><td class="num">${fmt.full(q.clicks)}</td><td class="num">${fmt.pct(q.ctr)}</td><td class="num ${fmt.posClass(q.position)}">${fmt.pos(q.position)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty-sm">No search queries</div>'}
+      </div>
+    `;
+  }
+
+  if (selectedPath) await loadAttribution(selectedPath);
+}
+
+// ── Page Flow (Sankey) ────────────────────────────────────
+async function renderPageFlow() {
+  const el = $('#view-page-flow');
+  el.innerHTML = infoBox('page-flow') + `
+    <div class="card mb-16">
+      <div class="card-header"><h3>Starting Page</h3></div>
+      <input class="input" placeholder="e.g. / or /rihanna-baby (landing page path)…" id="flow-start-input" value="${fmt.safe(STATE.filter['flow-start']||'')}">
+      <button class="btn btn-sm btn-primary mt-16" id="flow-go">Draw Flow</button>
+    </div>
+    <div id="flow-body">${STATE.filter['flow-start']?'<div class="loading">Loading flow…</div>':'<div class="empty" style="padding:40px;">Enter a landing page above to visualize where readers go next.</div>'}</div>
+  `;
+  $('#flow-go').addEventListener('click', async () => {
+    const start = $('#flow-start-input').value.trim();
+    if (!start) return;
+    STATE.filter['flow-start'] = start;
+    const body = $('#flow-body');
+    body.innerHTML = '<div class="loading">Loading flow…</div>';
+    const data = await apiSafe(`/api/page-flow?start=${encodeURIComponent(start)}&depth=2&${rangeParam()}`);
+    const d = data?.data || data;
+    if (!d || !d.links?.length) {
+      body.innerHTML = `<div class="empty" style="padding:40px;">No flow data for ${fmt.safe(start)}.<br><span style="font-size:11px;">Requires /api/page-flow endpoint (see Worker Endpoint Spec).</span></div>`;
+      return;
+    }
+    body.innerHTML = `<div class="sankey-wrap">${renderSankeySVG(d.nodes||[], d.links||[])}</div>`;
+  });
+}
+
+function renderSankeySVG(nodes, links) {
+  // Simple custom 2-column sankey (center = start page, right = next pages)
+  const W = 900, H = 420, pad = 20;
+  const total = links.reduce((s,l)=>s+l.value,0) || 1;
+  const startNode = nodes.find(n => n.id === links[0]?.source) || nodes[0];
+  const targets = [...new Set(links.map(l=>l.target))].map(id => ({id, value: links.filter(l=>l.target===id).reduce((s,l)=>s+l.value,0)})).sort((a,b)=>b.value-a.value).slice(0,15);
+  const rowHeight = (H - pad*2) / targets.length;
+  const svgLinks = targets.map((t,i) => {
+    const y1 = H/2;
+    const y2 = pad + i*rowHeight + rowHeight/2;
+    const pathW = Math.max(2, (t.value/total)*H*0.6);
+    return `<path class="sankey-link" d="M ${pad+160} ${y1} C ${W/2} ${y1}, ${W/2} ${y2}, ${W-pad-180} ${y2}" stroke-width="${pathW}"/>`;
+  }).join('');
+  const svgTargets = targets.map((t,i) => {
+    const y = pad + i*rowHeight + rowHeight/2;
+    return `<g class="sankey-node"><rect x="${W-pad-180}" y="${y-10}" width="170" height="20" rx="3"/><text x="${W-pad-175}" y="${y+4}">${fmt.safe((t.id||'').slice(0,28))} (${fmt.num(t.value)})</text></g>`;
+  }).join('');
+  return `<svg class="sankey-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
+    <g class="sankey-node"><rect x="${pad}" y="${H/2-14}" width="160" height="28" rx="3"/><text x="${pad+6}" y="${H/2+4}">${fmt.safe(((startNode?.id)||'').slice(0,22))} (${fmt.num(startNode?.pageviews||total)})</text></g>
+    ${svgLinks}${svgTargets}
+  </svg>`;
+}
+
+// ── Query Intelligence ────────────────────────────────────
+async function renderQueryIntelligence() {
+  const el = $('#view-query-intelligence');
+  el.innerHTML = infoBox('query-intelligence') + '<div class="loading">Analyzing queries…</div>';
+
+  const [data, queriesRaw] = await Promise.all([
+    apiSafe(`/api/query-intelligence?${rangeParam()}&brand=${encodeURIComponent(STATE.brandTerms.join(','))}`),
+    apiSafe(`/api/queries?${rangeParam()}&limit=1000`),
+  ]);
+  const qi = data?.data || data;
+  const rawQueries = queriesRaw?.queries || [];
+
+  // Fallback: compute branded split + clusters client-side if worker endpoint missing
+  let branded = qi?.branded, nonBranded = qi?.nonBranded, clusters = qi?.clusters, topGainers = qi?.topGainers, topLosers = qi?.topLosers;
+  if (!qi && rawQueries.length) {
+    const b = rawQueries.filter(q=>isBrandQuery(q.query));
+    const nb = rawQueries.filter(q=>!isBrandQuery(q.query));
+    const agg = arr => ({impressions:arr.reduce((s,q)=>s+q.impressions,0), clicks:arr.reduce((s,q)=>s+q.clicks,0), ctr:arr.reduce((s,q)=>s+q.ctr,0)/Math.max(arr.length,1), position:arr.reduce((s,q)=>s+q.position,0)/Math.max(arr.length,1)});
+    branded = agg(b); nonBranded = agg(nb);
+    // Quick cluster by first significant word
+    const buckets = {};
+    nb.forEach(q => { const key = (q.query||'').split(' ').filter(w=>w.length>3)[0] || (q.query||'').split(' ')[0] || '—'; if(!buckets[key]) buckets[key]={label:key, queries:0, impressions:0, clicks:0, positions:[], examples:[]}; buckets[key].queries++; buckets[key].impressions+=q.impressions; buckets[key].clicks+=q.clicks; buckets[key].positions.push(q.position); if(buckets[key].examples.length<3) buckets[key].examples.push(q.query); });
+    clusters = Object.values(buckets).map(c=>({...c, avgPosition:c.positions.reduce((a,b)=>a+b,0)/c.positions.length})).sort((a,b)=>b.impressions-a.impressions).slice(0,20);
+  }
+
+  el.innerHTML = infoBox('query-intelligence') + `
+    <div class="grid grid-2 mb-16">
+      <div class="card">
+        <div class="card-header"><h3>Branded</h3><span class="sub">${STATE.brandTerms.join(', ')}</span></div>
+        <div class="grid grid-4 grid-tight">
+          <div class="mini-card"><div class="mc-label">Impr.</div><div class="mc-value">${fmt.num(branded?.impressions||0)}</div></div>
+          <div class="mini-card"><div class="mc-label">Clicks</div><div class="mc-value">${fmt.num(branded?.clicks||0)}</div></div>
+          <div class="mini-card"><div class="mc-label">CTR</div><div class="mc-value">${((branded?.ctr||0)*100).toFixed(1)}%</div></div>
+          <div class="mini-card"><div class="mc-label">Avg. Pos</div><div class="mc-value">${fmt.pos(branded?.position||0)}</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>Non-Branded</h3><span class="sub">earned organic demand</span></div>
+        <div class="grid grid-4 grid-tight">
+          <div class="mini-card"><div class="mc-label">Impr.</div><div class="mc-value">${fmt.num(nonBranded?.impressions||0)}</div></div>
+          <div class="mini-card"><div class="mc-label">Clicks</div><div class="mc-value">${fmt.num(nonBranded?.clicks||0)}</div></div>
+          <div class="mini-card"><div class="mc-label">CTR</div><div class="mc-value">${((nonBranded?.ctr||0)*100).toFixed(1)}%</div></div>
+          <div class="mini-card"><div class="mc-label">Avg. Pos</div><div class="mc-value">${fmt.pos(nonBranded?.position||0)}</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-16">
+      <div class="card-header"><h3>Query Clusters</h3><span class="sub">${clusters?.length||0} clusters</span></div>
+      ${clusters?.length ? makeTable({
+        id:'qi-clusters', data:clusters, defaultSort:'impressions', defaultSortDir:'desc',
+        columns:[
+          {key:'label',label:'Cluster',render:c=>`<div class="title-text">🔗 ${fmt.safe(c.label)}</div><div style="font-size:11px;color:var(--text-dim);">${(c.examples||[]).slice(0,3).map(e=>fmt.safe(e)).join(' · ')}</div>`},
+          {key:'queries',label:'Queries',num:true,fmt:fmt.full},
+          {key:'impressions',label:'Impr.',num:true,fmt:fmt.full},
+          {key:'clicks',label:'Clicks',num:true,fmt:fmt.full},
+          {key:'avgPosition',label:'Avg. Pos',num:true,render:c=>`<span class="${fmt.posClass(c.avgPosition)}">${fmt.pos(c.avgPosition)}</span>`},
+        ],
+      }) : '<div class="empty-sm" style="padding:20px;">No clusters yet</div>'}
+    </div>
+
+    ${topGainers?.length || topLosers?.length ? `
+    <div class="grid grid-2 mb-16">
+      <div class="card"><div class="card-header"><h3>↑ Top Position Gainers</h3></div>
+        ${(topGainers||[]).length ? `<div class="table-scroll"><table><thead><tr><th>Query</th><th class="num-head">Prev</th><th class="num-head">Now</th><th class="num-head">Δ</th></tr></thead><tbody>${topGainers.slice(0,10).map(g=>`<tr><td>${fmt.safe(g.query)}</td><td class="num">${fmt.pos(g.posPrev)}</td><td class="num">${fmt.pos(g.posNow)}</td><td class="num" style="color:var(--green)">${g.deltaPos}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty-sm">No gainers</div>'}
+      </div>
+      <div class="card"><div class="card-header"><h3>↓ Top Position Losers</h3></div>
+        ${(topLosers||[]).length ? `<div class="table-scroll"><table><thead><tr><th>Query</th><th class="num-head">Prev</th><th class="num-head">Now</th><th class="num-head">Δ</th></tr></thead><tbody>${topLosers.slice(0,10).map(g=>`<tr><td>${fmt.safe(g.query)}</td><td class="num">${fmt.pos(g.posPrev)}</td><td class="num">${fmt.pos(g.posNow)}</td><td class="num" style="color:var(--accent)">+${g.deltaPos}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty-sm">No losers</div>'}
+      </div>
+    </div>`:''}
+  `;
+}
+
+// ── Revenue Deep Dive ────────────────────────────────────
+async function renderRevenueDeep() {
+  const el = $('#view-revenue-deep');
+  el.innerHTML = infoBox('revenue-deep') + '<div class="loading">Crunching revenue…</div>';
+
+  const [articleRev, geo, sources, forecast] = await Promise.all([
+    apiSafe(`/api/article-revenue?${rangeParam()}&top=200`),
+    apiSafe(`/api/geo?${rangeParam()}`),
+    apiSafe(`/api/sources?${rangeParam()}`),
+    apiSafe(`/api/forecast?metric=revenue&horizon=30d`),
+  ]);
+  const rev = articleRev?.data || articleRev;
+  const rpm = STATE.rpmOverride || {tier1:9, tier2:3.5, tier3:0.8};
+  const articles = rev?.articles || [];
+  const totalRev = rev?.totals?.estRevenue || articles.reduce((s,a)=>s+(a.estRevenue||0),0);
+
+  // Fallback from geo if article-revenue missing
+  const t1List = ['United States','United Kingdom','Canada','Australia','New Zealand','Ireland'];
+  const countryRev = (geo?.countries||[]).map(g=>({...g, revenue: g.pageviews/1000 * (t1List.includes(g.country)?rpm.tier1:rpm.tier2) * 0.7}));
+
+  STATE.exports['revenue-deep'] = articles;
+
+  el.innerHTML = infoBox('revenue-deep') + `
+    <div class="grid grid-4 mb-16">
+      <div class="mini-card"><div class="mc-label">Total (${rangeLabel()})</div><div class="mc-value" style="color:var(--green);">$${fmt.num(totalRev)}</div></div>
+      <div class="mini-card"><div class="mc-label">Projected (30d)</div><div class="mc-value">$${fmt.num(forecast?.data?.monthEndProjected || totalRev*30/7)}</div></div>
+      <div class="mini-card"><div class="mc-label">RPM Blended</div><div class="mc-value">$${((totalRev/Math.max((articles.reduce((s,a)=>s+a.pageviews,0))/1000,1))).toFixed(2)}</div></div>
+      <div class="mini-card"><div class="mc-label">Top T1 Share</div><div class="mc-value">${((articles.reduce((s,a)=>s+(a.tier1Share||0),0)/Math.max(articles.length,1))*100).toFixed(0)}%</div></div>
+    </div>
+
+    <div class="card mb-16">
+      <div class="card-header"><h3>💰 Revenue per Article</h3><span class="sub">Top 50 earners</span></div>
+      ${articles.length ? makeTable({
+        id:'rev-articles', data:articles.slice(0,50), defaultSort:'estRevenue', defaultSortDir:'desc',
+        columns:[
+          {key:'title',label:'Article',render:a=>`<div class="title-text">${fmt.safe(a.title||a.pagePath||'')}</div>`},
+          {key:'pageviews',label:'PV',num:true,fmt:fmt.full},
+          {key:'estRevenue',label:'Est. Revenue',num:true,render:a=>`<span style="color:var(--green);font-weight:600;">$${fmt.num(a.estRevenue)}</span>`},
+          {key:'tier1Share',label:'T1 Share',num:true,fmt:v=>((v||0)*100).toFixed(0)+'%'},
+        ],
+      }) : '<div class="empty-sm" style="padding:20px;">Per-article revenue not yet available.<br><span style="font-size:11px;">Requires /api/article-revenue endpoint (see Worker Endpoint Spec).</span></div>'}
+    </div>
+
+    <div class="grid grid-2 mb-16">
+      <div class="card">
+        <div class="card-header"><h3>Revenue by Country</h3></div>
+        ${countryRev.length ? `<div class="bar-list">${countryRev.slice(0,15).map(c=>`<div class="bar-row"><div class="bar-fill" style="width:${(c.revenue/Math.max(countryRev[0].revenue,1))*100}%"></div><div class="bar-label">${countryFlag(c.code)} ${fmt.safe(c.country)}</div><div class="bar-val">$${fmt.num(c.revenue)}</div></div>`).join('')}</div>`:'<div class="empty-sm">No data</div>'}
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>RPM Benchmarks</h3><span class="sub">news-site medians</span></div>
+        <table style="width:100%;font-size:13px;">
+          <thead><tr style="color:var(--text-dim);font-size:11px;"><th style="padding:6px 8px;text-align:left;">Network</th><th style="padding:6px 8px;text-align:right;">Typical RPM</th><th style="padding:6px 8px;text-align:right;">T1 Required</th></tr></thead>
+          <tbody>
+            <tr><td style="padding:6px 8px;">Raptive (AdThrive)</td><td class="num">$12–$22</td><td class="num">50%+</td></tr>
+            <tr><td style="padding:6px 8px;">Mediavine</td><td class="num">$10–$20</td><td class="num">50%+</td></tr>
+            <tr><td style="padding:6px 8px;">Ezoic</td><td class="num">$5–$12</td><td class="num">no min</td></tr>
+            <tr><td style="padding:6px 8px;">AdSense</td><td class="num">$2–$6</td><td class="num">no min</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
 const NAV_LIST = [
   {key:'overview',label:'Overview',group:'Views',shortcut:'1'},
   {key:'realtime',label:'Realtime',group:'Views',shortcut:'2'},
+  {key:'live-hits',label:'Live Hits',group:'Views',shortcut:'L'},
   {key:'articles',label:'Articles',group:'Views',shortcut:'3'},
   {key:'movers',label:'Movers',group:'Views',shortcut:'4'},
+  {key:'daily-digest',label:'Daily Digest',group:'Views',shortcut:'D'},
   {key:'insights',label:'Insights',group:'Views',shortcut:'5'},
+  {key:'anomalies',label:'Anomalies & Alerts',group:'Views',shortcut:'A'},
   {key:'contentops',label:'Content Ops',group:'Views',shortcut:'6'},
+  {key:'content-roi',label:'Content ROI',group:'Views'},
   {key:'goals',label:'Goals',group:'Views',shortcut:'7'},
   {key:'authors',label:'Authors',group:'Views'},
   {key:'tags',label:'Tags',group:'Views'},
   {key:'sources',label:'Traffic Sources',group:'Views'},
+  {key:'referrers',label:'Referrers',group:'Views'},
+  {key:'page-attribution',label:'Page Attribution',group:'Views'},
+  {key:'page-flow',label:'Page Flow',group:'Views'},
   {key:'campaigns',label:'Campaigns',group:'Views'},
   {key:'landing-pages',label:'Landing Pages',group:'Views'},
   {key:'audience',label:'Audience',group:'Views'},
@@ -1989,12 +3245,14 @@ const NAV_LIST = [
   {key:'categories',label:'Categories',group:'Views'},
   {key:'events',label:'Events',group:'Views'},
   {key:'queries',label:'Search Queries',group:'Views'},
+  {key:'query-intelligence',label:'Query Intelligence',group:'Views'},
   {key:'pages',label:'Search Pages',group:'Views'},
   {key:'matrix',label:'Query × Page Matrix',group:'Views'},
   {key:'search-trends',label:'Search Trends',group:'Views'},
   {key:'news-search',label:'News Search',group:'Views'},
   {key:'seo-opportunities',label:'SEO Opportunities',group:'Views'},
   {key:'revenue',label:'Revenue Estimator',group:'Views'},
+  {key:'revenue-deep',label:'Revenue Deep Dive',group:'Views'},
 ];
 
 let cmdkSelected = 0;
@@ -2045,6 +3303,10 @@ const renderers = {
   queries:renderQueries, pages:renderPages, matrix:renderMatrix,
   'search-trends':renderSearchTrends, 'news-search':renderNewsSearch, 'seo-opportunities':renderSeoOpportunities,
   revenue:renderRevenue,
+  'live-hits':renderLiveHits, 'daily-digest':renderDailyDigest, anomalies:renderAnomalies,
+  'content-roi':renderContentROI, referrers:renderReferrers,
+  'page-attribution':renderPageAttribution, 'page-flow':renderPageFlow,
+  'query-intelligence':renderQueryIntelligence, 'revenue-deep':renderRevenueDeep,
 };
 
 const titles = {
@@ -2056,6 +3318,10 @@ const titles = {
   queries:'Search Queries', pages:'Search Pages', matrix:'Query × Page Matrix',
   'search-trends':'Search Trends', 'news-search':'News Search', 'seo-opportunities':'SEO Opportunities',
   revenue:'Revenue Estimator',
+  'live-hits':'Live Hits', 'daily-digest':'Executive Daily Digest', anomalies:'Anomalies & Alerts',
+  'content-roi':'Content ROI', referrers:'Referrers',
+  'page-attribution':'Page Attribution', 'page-flow':'Page Flow',
+  'query-intelligence':'Query Intelligence', 'revenue-deep':'Revenue Deep Dive',
 };
 
 function renderView(view) {
@@ -2122,6 +3388,8 @@ document.addEventListener('keydown', e => {
   if (e.key==='Escape') { closeCmdk(); $$('.modal-backdrop.active').forEach(m=>closeModal(m.id)); return; }
   const shortcuts = {'1':'overview','2':'realtime','3':'articles','4':'movers','5':'insights','6':'contentops','7':'goals'};
   if (shortcuts[e.key]) { renderView(shortcuts[e.key]); return; }
+  const letterShortcuts = {'l':'live-hits','L':'live-hits','d':'daily-digest','D':'daily-digest','a':'anomalies','A':'anomalies'};
+  if (letterShortcuts[e.key]) { renderView(letterShortcuts[e.key]); return; }
   if (e.key==='r'||e.key==='R') { STATE.cache={}; renderView(STATE.view); return; }
   if (e.key==='t'||e.key==='T') { setTheme(STATE.theme==='dark'?'light':'dark'); return; }
   if (e.key==='?') { $('#help-modal').classList.add('active'); return; }
